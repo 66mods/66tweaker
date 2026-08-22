@@ -29,7 +29,21 @@ jobs:
         run: dotnet build 66mods.Tweaker.sln --configuration Release --no-restore --warnaserror
 
       - name: Test
-        run: dotnet test 66mods.Tweaker.sln --configuration Release --no-build --verbosity normal
+        # A trx as well as console output: the run summary otherwise reports only "exit code 1", and the
+        # failing assertion is buried in a log that needs an authenticated download to read.
+        run: >
+          dotnet test 66mods.Tweaker.sln --configuration Release --no-build --verbosity normal
+          --logger "trx;LogFileName=results.trx"
+          --results-directory artifacts/test-results
+
+      - name: Keep the test results
+        # always(): the results matter most when the step before this one failed.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: artifacts/test-results
+          if-no-files-found: warn
 
       - name: Publish
         # Proves the single-file build still produces an executable; not uploaded as a release asset.

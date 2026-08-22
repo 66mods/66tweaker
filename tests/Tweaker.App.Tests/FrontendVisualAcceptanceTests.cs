@@ -53,8 +53,16 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
             {
                 var tabs = window.FindName("MainTabs").Should().BeOfType<TabControl>().Subject;
                 tabs.Items.Count.Should().Be(8);
-                window.ActualWidth.Should().BeApproximately(1360, 1);
-                window.ActualHeight.Should().BeApproximately(860, 1);
+                // The window is the size it asked for, or the desktop's, whichever is smaller.
+                // MainWindow.FitToWorkArea clamps it deliberately so the lower edge and its buttons never
+                // land under the taskbar, so asserting a flat 1360x860 asserted the absence of a shipped
+                // feature. It only ever passed because this machine's desktop is large enough; a CI
+                // runner's virtual display is 1044 wide, and that is where it first said so.
+                // Mirrors FitToWorkArea exactly, minimum included: a desktop smaller than MinWidth still
+                // gets MinWidth, and an assertion that ignored that would be wrong in the other direction.
+                var desktop = SystemParameters.WorkArea;
+                window.ActualWidth.Should().BeApproximately(Math.Max(window.MinWidth, Math.Min(1360, desktop.Width)), 1);
+                window.ActualHeight.Should().BeApproximately(Math.Max(window.MinHeight, Math.Min(860, desktop.Height)), 1);
 
                 for (var index = 0; index < tabs.Items.Count; index++)
                 {
@@ -182,7 +190,7 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
         progress.ProgressPercent.Should().Be(99,
             "the ring reads the position out of the narration rather than guessing, and floors it");
         ScrollPageToEnd(window, 1);
-        Capture(window, Path.Combine(output, "run-ring.png"), 1360, 860);
+        Capture(window, Path.Combine(output, "run-ring.png"));
 
         var console = Descendants<ListBox>(window).FirstOrDefault(x => x.IsVisible && x.Items.Count > 1000);
         console.Should().NotBeNull("the run console must render a full-size run, not just hold it");
@@ -193,12 +201,12 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
         consoleScroll.VerticalOffset.Should().BeGreaterThan(consoleScroll.ScrollableHeight - 2,
             "the console must open on the newest line, not the first of 1494");
         ScrollPageToEnd(window, 1);
-        Capture(window, Path.Combine(output, "run-console.png"), 1360, 860);
+        Capture(window, Path.Combine(output, "run-console.png"));
 
         progress.Complete(ApplyOutcome.Error, "Apply failed", @"Verification failed at LocalMachine|SYSTEM\CurrentControlSet\Control\PriorityControl|Win32PrioritySeparation: expected i:40, found i:2.");
         Pump(window);
         ScrollPageToEnd(window, 1);
-        Capture(window, Path.Combine(output, "run-console-failed.png"), 1360, 860);
+        Capture(window, Path.Combine(output, "run-console-failed.png"));
         // The measured before/after panel is the product's one uncopyable claim, so render it for real.
         progress.Complete(ApplyOutcome.Success, "Windows applied",
             "251 change(s) applied and verified. Use Undo to restore the exact captured state.");
@@ -209,7 +217,7 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
         Descendants<ItemsControl>(window).Any(x => x.IsVisible && x.Items.Count == 5)
             .Should().BeTrue("the before/after panel must render its measured rows");
         ScrollPageToEnd(window, 1);
-        Capture(window, Path.Combine(output, "run-before-after.png"), 1360, 860);
+        Capture(window, Path.Combine(output, "run-before-after.png"));
         progress.PublishChange(null);
 
         // The whole point of the filter is finding the refusals in a 1494-line run.
@@ -220,7 +228,7 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
             .Items.Count.Should().BeLessThan(15,
                 "only refusals and summary lines are problems; 135 deliberate skips would hide the one failure");
         ScrollPageToEnd(window, 1);
-        Capture(window, Path.Combine(output, "run-console-issues.png"), 1360, 860);
+        Capture(window, Path.Combine(output, "run-console-issues.png"));
 
         progress.Dismiss();
         Pump(window);
@@ -250,13 +258,15 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
             Descendants<ScrollViewer>(view!).First().ScrollToEnd();
             Pump(window);
         }
-        Capture(window, Path.Combine(output, fileName), 1360, 860);
+        Capture(window, Path.Combine(output, fileName));
     }
 
-    private static void Capture(Visual visual, string path, int width, int height)
+    /// <summary>Renders at the window's real size, which is not always the size it asked for.</summary>
+    private static void Capture(Window window, string path)
     {
-        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
-        bitmap.Render(visual);
+        var bitmap = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight,
+            96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(window);
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using (var stream = File.Create(path))
