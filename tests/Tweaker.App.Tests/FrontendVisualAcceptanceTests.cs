@@ -47,22 +47,22 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
                 WindowStartupLocation = WindowStartupLocation.Manual
             };
             window.Show();
+            // Sized after Show on purpose. MainWindow.FitToWorkArea clamps the *opening* size to the usable
+            // desktop so the lower edge never lands under the taskbar — correct for a real user, and it
+            // made this test depend on the size of whatever screen it ran on. A CI runner clamped it to
+            // 1044 and the run failed. Setting the size afterwards leaves that behaviour alone and gives
+            // the evidence one fixed size everywhere, which is the point of evidence. The two layout tests
+            // already drive windows this way at up to 1366 wide, on the same runner.
+            window.Width = 1360;
+            window.Height = 860;
             Pump(window);
 
             try
             {
                 var tabs = window.FindName("MainTabs").Should().BeOfType<TabControl>().Subject;
                 tabs.Items.Count.Should().Be(8);
-                // The window is the size it asked for, or the desktop's, whichever is smaller.
-                // MainWindow.FitToWorkArea clamps it deliberately so the lower edge and its buttons never
-                // land under the taskbar, so asserting a flat 1360x860 asserted the absence of a shipped
-                // feature. It only ever passed because this machine's desktop is large enough; a CI
-                // runner's virtual display is 1044 wide, and that is where it first said so.
-                // Mirrors FitToWorkArea exactly, minimum included: a desktop smaller than MinWidth still
-                // gets MinWidth, and an assertion that ignored that would be wrong in the other direction.
-                var desktop = SystemParameters.WorkArea;
-                window.ActualWidth.Should().BeApproximately(Math.Max(window.MinWidth, Math.Min(1360, desktop.Width)), 1);
-                window.ActualHeight.Should().BeApproximately(Math.Max(window.MinHeight, Math.Min(860, desktop.Height)), 1);
+                window.ActualWidth.Should().BeApproximately(1360, 1);
+                window.ActualHeight.Should().BeApproximately(860, 1);
 
                 for (var index = 0; index < tabs.Items.Count; index++)
                 {
