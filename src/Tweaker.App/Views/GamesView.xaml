@@ -1,0 +1,239 @@
+<UserControl x:Class="Tweaker.App.Views.GamesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Tweaker.App.Views">
+  <UserControl.Resources>
+    <local:ResourceKeyConverter x:Key="ResourceKeyConverter"/>
+    <Style x:Key="GameTileItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource FocusVisual}">
+      <Setter Property="Margin" Value="0,0,10,0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBoxItem">
+            <Border x:Name="Frame" Background="{Binding BackdropKey, Converter={StaticResource ResourceKeyConverter}}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="12,14">
+              <ContentPresenter/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="#3A3F4C"/></Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                <Setter TargetName="Frame" Property="BorderThickness" Value="2"/>
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>
+
+  <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}" VerticalScrollBarVisibility="Auto">
+    <Grid Margin="32,24,32,28" local:RunDim.ReduceMotion="{Binding ReduceMotion}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/><RowDefinition Height="20"/>
+        <RowDefinition Height="Auto"/><RowDefinition Height="12"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+
+      <StackPanel Orientation="Horizontal">
+        <Border Style="{StaticResource PageHeaderIconBadgeStyle}"><Path Data="{StaticResource Icon.Games}" Style="{StaticResource PageHeaderIconPathStyle}"/></Border>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="Game profiles" Style="{StaticResource PageTitleStyle}"/>
+          <TextBlock Text="Pick a game and a profile. Settings are backed up first." Style="{StaticResource PageSubtitleStyle}" Margin="0,6,0,0"/>
+        </StackPanel>
+      </StackPanel>
+
+      <Grid Grid.Row="2">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="12"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+
+        <Border Style="{StaticResource HomeSurfaceCardStyle}" Padding="18,16"
+                local:RunDim.IsRunning="{Binding GameProfiles.Progress.IsRunning}">
+          <StackPanel>
+            <Grid>
+              <TextBlock Text="Detected games" Style="{StaticResource SectionTitleStyle}"/>
+              <TextBlock Text="{Binding Home.InstalledGames, StringFormat={}{0} detected}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}"/>
+            </Grid>
+            <ListBox ItemsSource="{Binding GameCards}" Margin="0,14,0,0" Style="{x:Null}"
+                     Background="Transparent" BorderThickness="0" Padding="0"
+                     ItemContainerStyle="{StaticResource GameTileItemStyle}"
+                     SelectedValuePath="Name"
+                     SelectedValue="{Binding GameProfiles.SelectedGame, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Columns="5"/></ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid Height="150">
+                    <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <!-- The glyph is the artwork: drawn in the app's own style, so no cover has to be
+                         downloaded and the page keeps working with no network at all. -->
+                    <Path Data="{Binding IconKey, Converter={StaticResource ResourceKeyConverter}}"
+                          Width="46" Height="46" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"
+                          Fill="{Binding AccentKey, Converter={StaticResource ResourceKeyConverter}}"/>
+                    <StackPanel Grid.Row="1">
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13.5"
+                                 TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+                      <TextBlock Text="{Binding StatusText}" FontSize="11" Margin="0,3,0,0" HorizontalAlignment="Center">
+                        <TextBlock.Style>
+                          <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource SubtleTextBrush}"/>
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsDetected}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource StatusSuccessBrush}"/>
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </TextBlock.Style>
+                      </TextBlock>
+                      <TextBlock Text="{Binding Subtitle}" FontSize="10.5" Margin="0,2,0,0" HorizontalAlignment="Center"
+                                 Foreground="{StaticResource SubtleTextBrush}" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Border Margin="0,10,0,0" Padding="12" Tag="Warning">
+              <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource StatusChipStyle}">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                  <Style.Triggers><DataTrigger Binding="{Binding GameProfiles.HasDetectedGames}" Value="False"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                </Style>
+              </Border.Style>
+              <TextBlock Text="{Binding GameProfiles.NoGamesMessage}" Style="{StaticResource RowMetaStyle}" TextWrapping="Wrap"/>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Style="{StaticResource HomeSurfaceCardStyle}" Padding="20,18">
+          <StackPanel>
+            <TextBlock Text="{Binding GameProfiles.SelectedGame}" Style="{StaticResource SectionTitleStyle}"/>
+            <TextBlock Text="Choose how much visual quality to trade for frame rate." Style="{StaticResource BodyMutedStyle}" Margin="0,6,0,0"/>
+
+            <!-- Wraps to two rows on a narrow window; four fixed columns cut the titles down to "Balanc". -->
+            <WrapPanel Margin="0,16,0,0" ItemWidth="150" ItemHeight="86">
+              <RadioButton Style="{StaticResource ProfileChoiceStyle}" GroupName="GameProfile" Tag="BalancedFps" Checked="Profile_OnChecked"
+                           IsChecked="{Binding GameProfiles.IsBalancedSelected, Mode=OneWay}">
+                <StackPanel>
+                  <TextBlock Text="Balanced FPS" Style="{StaticResource RowTitleStyle}" FontSize="14"/>
+                  <TextBlock Text="Keeps image quality" Style="{StaticResource RowMetaStyle}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Style="{StaticResource ProfileChoiceStyle}" GroupName="GameProfile" Tag="Competitive" Checked="Profile_OnChecked"
+                           IsChecked="{Binding GameProfiles.IsCompetitiveSelected, Mode=OneWay}">
+                <StackPanel>
+                  <TextBlock Text="Competitive" Style="{StaticResource RowTitleStyle}" FontSize="14"/>
+                  <TextBlock Text="Slight blur, lower latency" Style="{StaticResource RowMetaStyle}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Style="{StaticResource ProfileChoiceStyle}" GroupName="GameProfile" Tag="MegaFps" Checked="Profile_OnChecked"
+                           IsChecked="{Binding GameProfiles.IsMegaFpsSelected, Mode=OneWay}">
+                <StackPanel>
+                  <TextBlock Text="Mega FPS" Style="{StaticResource RowTitleStyle}" FontSize="14"/>
+                  <TextBlock Text="Blurry textures, no filtering" Style="{StaticResource RowMetaStyle}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Style="{StaticResource ProfileChoiceStyle}" GroupName="GameProfile" Tag="UltraPotato" Checked="Profile_OnChecked"
+                           IsChecked="{Binding GameProfiles.IsUltraPotatoSelected, Mode=OneWay}">
+                <StackPanel>
+                  <TextBlock Text="Ultra Potato" Style="{StaticResource RowTitleStyle}" FontSize="14"/>
+                  <TextBlock Text="Maximum frames, worst image" Style="{StaticResource RowMetaStyle}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+              </RadioButton>
+            </WrapPanel>
+
+            <!--
+              Shown only when this PC has no driver interface we can write. Without it an AMD or Intel
+              machine looked exactly like an NVIDIA one while silently getting half the profile.
+            -->
+            <Border Margin="0,16,0,0" Padding="12" Tag="Warning">
+              <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource StatusChipStyle}">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                  <Style.Triggers><DataTrigger Binding="{Binding GameProfiles.HasDriverLayerNote}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                </Style>
+              </Border.Style>
+              <TextBlock Text="{Binding GameProfiles.DriverLayerNote}" Style="{StaticResource RowMetaStyle}" TextWrapping="Wrap"/>
+            </Border>
+
+            <!--
+              Exactly what will be written: the client's own settings first, then the driver rows, which are
+              read from the installed driver rather than assumed. Both halves come from the same source the
+              apply uses, so this list cannot drift from the list that runs.
+            -->
+            <StackPanel Margin="0,20,0,0">
+              <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                  <Style.Triggers><DataTrigger Binding="{Binding GameProfiles.HasPreview}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                </Style>
+              </StackPanel.Style>
+              <TextBlock Text="WILL BE APPLIED" Style="{StaticResource DataLabelStyle}"/>
+              <TextBlock Text="{Binding GameProfiles.PreviewCaption}" Style="{StaticResource RowMetaStyle}" Margin="0,5,0,10" TextWrapping="Wrap"/>
+              <!-- Capped so a long preview never pushes the Apply button and its result off screen. -->
+              <ScrollViewer MaxHeight="232" VerticalScrollBarVisibility="Auto" Style="{StaticResource DarkScrollViewerStyle}">
+                <StackPanel>
+              <ItemsControl ItemsSource="{Binding GameProfiles.PreviewApplied}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Style="{StaticResource PreviewLineStyle}">
+                      <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource Icon.CheckCircle}" Width="14" Height="14" Stretch="Uniform" Fill="{StaticResource StatusSuccessBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding}" Margin="9,0,0,0" FontSize="12.5" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <ItemsControl ItemsSource="{Binding GameProfiles.PreviewSkipped}" Margin="0,4,0,0">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Style="{StaticResource PreviewLineStyle}">
+                      <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource Icon.CrossCircle}" Width="14" Height="14" Stretch="Uniform" Fill="{StaticResource DisabledBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding}" Margin="9,0,0,0" FontSize="12.5" Foreground="{StaticResource SubtleTextBrush}" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+                </StackPanel>
+              </ScrollViewer>
+            </StackPanel>
+
+            <WrapPanel Margin="0,20,0,0">
+              <Button Style="{StaticResource PrimaryButtonStyle}" Content="Apply game profile" Padding="22,11" Margin="0,0,10,8"
+                      Command="{Binding GameProfiles.ApplyCommand}" IsEnabled="{Binding GameProfiles.CanApplySelectedGame}"/>
+              <Button Style="{StaticResource SecondaryButtonStyle}" Content="Undo" Command="{Binding GameProfiles.UndoCommand}" Margin="0,0,10,8" Padding="18,11"/>
+              <Button Style="{StaticResource SecondaryButtonStyle}" Content="Close Roblox and clear cache" Margin="0,0,10,8" Padding="18,11"
+                      Command="{Binding GameProfiles.ClearCacheCommand}"
+                      ToolTip="Closes Roblox and deletes its downloaded asset cache. A driver profile only takes effect when the game starts."/>
+              <Button Style="{StaticResource SecondaryButtonStyle}" Content="Reset driver profile" Margin="0,0,0,8" Padding="18,11"
+                      Command="{Binding GameProfiles.ResetProfileCommand}" IsEnabled="{Binding GameProfiles.CanResetProfile}"
+                      Foreground="{StaticResource GoldBrush}"
+                      ToolTip="Puts the NVIDIA profile back exactly as it was before 66mods first wrote to it. Works even after the app was restarted."/>
+            </WrapPanel>
+
+            <local:ApplyPanel DataContext="{Binding GameProfiles.Progress}" Margin="0,16,0,0"
+                              ReduceMotion="{Binding DataContext.ReduceMotion, RelativeSource={RelativeSource AncestorType=UserControl}}">
+              <local:ApplyPanel.Style>
+                <Style TargetType="local:ApplyPanel">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsRunning}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                    <DataTrigger Binding="{Binding HasOutcome}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </local:ApplyPanel.Style>
+            </local:ApplyPanel>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

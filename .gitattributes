@@ -1,0 +1,16 @@
+# The frozen batch scripts are byte-locked: legacy/source/source-hashes.json records each file's exact
+# size and SHA-256, and legacy/legacy-bundle.json is compiled from those exact bytes and checked against
+# LegacyBundleIdentity.Sha256 at runtime.
+#
+# Git normalises line endings by default, which rewrites those bytes on checkout. The result is silent and
+# serious: a fresh clone regenerates a bundle with a different hash, so nobody can reproduce the shipped
+# one and the SHA-256 lock the README promises becomes unverifiable. Treat them as binary — they are data,
+# not source anyone edits by hand.
+legacy/source/** -text
+
+# The compiled bundle and its ledger are generated artifacts and are compared byte-for-byte.
+legacy/legacy-bundle.json -text
+legacy/parity-manifest.json -text
+
+# Screenshots used as acceptance evidence.
+*.png binary

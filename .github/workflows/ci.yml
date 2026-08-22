@@ -1,0 +1,45 @@
+# The README tells contributors that the test suite is the reason the transaction model can be trusted.
+# That is only true if it actually runs on every change rather than on whoever remembers.
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    # Windows, not because it is convenient: the suite renders real WPF windows and drives a real named
+    # pipe. There is nothing here that would survive being moved to a Linux runner.
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore 66mods.Tweaker.sln
+
+      - name: Build
+        # Warnings are kept at zero deliberately, so a new one should fail the build rather than scroll past.
+        run: dotnet build 66mods.Tweaker.sln --configuration Release --no-restore --warnaserror
+
+      - name: Test
+        run: dotnet test 66mods.Tweaker.sln --configuration Release --no-build --verbosity normal
+
+      - name: Publish
+        # Proves the single-file build still produces an executable; not uploaded as a release asset.
+        run: >
+          dotnet publish src/Tweaker.App/Tweaker.App.csproj
+          --configuration Release --runtime win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:AllowedReferenceRelatedFileExtensions=none
+          --output artifacts/ci
+
+      - name: Report the hash
+        # The same value the Releases page publishes, so the two can be compared without a local build.
+        run: Get-FileHash 'artifacts/ci/66mods Tweaker.exe' -Algorithm SHA256
+        shell: pwsh

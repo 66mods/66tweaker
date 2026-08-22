@@ -1,0 +1,94 @@
+<UserControl x:Class="Tweaker.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    A settings page is a list of things you can change. The previous version was three cards carrying more
+    explanation than control, with a single switch buried in the middle of it.
+  -->
+  <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}" VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="32,24,32,28">
+
+      <StackPanel Orientation="Horizontal">
+        <Border Style="{StaticResource PageHeaderIconBadgeStyle}">
+          <Path Data="{StaticResource Icon.Settings}" Style="{StaticResource PageHeaderIconPathStyle}"/>
+        </Border>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="Settings" Style="{StaticResource PageTitleStyle}"/>
+          <TextBlock Text="Everything here is local to this PC." Style="{StaticResource PageSubtitleStyle}" Margin="0,6,0,0"/>
+        </StackPanel>
+      </StackPanel>
+
+      <Border Style="{StaticResource HomeSurfaceCardStyle}" Margin="0,20,0,0" Padding="0">
+        <StackPanel>
+
+          <Grid Style="{StaticResource SettingRowStyle}">
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="Reduce motion" Style="{StaticResource RowTitleStyle}"/>
+              <TextBlock Text="Follows your Windows setting by default." Style="{StaticResource RowMetaStyle}" Margin="0,3,0,0"/>
+            </StackPanel>
+            <CheckBox Style="{StaticResource DarkCheckBoxStyle}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding ReduceMotion, Mode=TwoWay}"/>
+          </Grid>
+
+          <Border Height="1" Background="{StaticResource BorderBrush}"/>
+
+          <Grid Style="{StaticResource SettingRowStyle}">
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="Where your backups live" Style="{StaticResource RowTitleStyle}"/>
+              <TextBlock Text="%LocalAppData%\66mods Tweaker\Transactions" FontFamily="Cascadia Mono, Consolas"
+                         FontSize="12" Foreground="{StaticResource SubtleTextBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Grid>
+
+          <Border Height="1" Background="{StaticResource BorderBrush}"/>
+
+          <Grid Style="{StaticResource SettingRowStyle}">
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="Administrator rights" Style="{StaticResource RowTitleStyle}"/>
+              <TextBlock Text="Every operation is listed for you to confirm before it runs."
+                         Style="{StaticResource RowMetaStyle}" Foreground="{StaticResource GoldBrush}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+          </Grid>
+
+          <Border Height="1" Background="{StaticResource BorderBrush}"/>
+
+          <Grid Style="{StaticResource SettingRowStyle}">
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="Official links" Style="{StaticResource RowTitleStyle}"/>
+              <TextBlock Text="Opens in your browser." Style="{StaticResource RowMetaStyle}" Margin="0,3,0,0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+              <Border Style="{StaticResource GameRowStyle}" Padding="12,8" Margin="0,0,8,0">
+                <StackPanel Orientation="Horizontal">
+                  <Path Data="{StaticResource Icon.ExternalLink}" Width="13" Height="13" Stretch="Uniform"
+                        Fill="{StaticResource PrimaryHoverBrush}" VerticalAlignment="Center"/>
+                  <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12.5">
+                    <Hyperlink NavigateUri="https://www.youtube.com/@66mods" RequestNavigate="OfficialLink_OnRequestNavigate"
+                               Foreground="{StaticResource TextBrush}" TextDecorations="None">YouTube</Hyperlink>
+                  </TextBlock>
+                </StackPanel>
+              </Border>
+              <Border Style="{StaticResource GameRowStyle}" Padding="12,8">
+                <StackPanel Orientation="Horizontal">
+                  <Path Data="{StaticResource Icon.Discord}" Width="15" Height="15" Stretch="Uniform"
+                        Fill="{StaticResource PrimaryHoverBrush}" VerticalAlignment="Center"/>
+                  <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12.5">
+                    <Hyperlink NavigateUri="https://discord.com/invite/66mods" RequestNavigate="OfficialLink_OnRequestNavigate"
+                               Foreground="{StaticResource TextBrush}" TextDecorations="None">Discord</Hyperlink>
+                  </TextBlock>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Grid>
+
+        </StackPanel>
+      </Border>
+
+      <!-- The four badges were a row of green stickers; as one line they still say it and stop shouting. -->
+      <TextBlock Text="No updater · No telemetry · No downloads · No cloud"
+                 Style="{StaticResource RowMetaStyle}" Foreground="{StaticResource StatusSuccessBrush}"
+                 HorizontalAlignment="Center" Margin="0,16,0,0"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

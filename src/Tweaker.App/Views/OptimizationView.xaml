@@ -1,0 +1,118 @@
+<UserControl x:Class="Tweaker.App.Views.OptimizationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Tweaker.App.Views">
+  <UserControl.Resources>
+    <local:CountToStarConverter x:Key="CountToStarConverter"/>
+    <local:ResourceKeyConverter x:Key="ResourceKeyConverter"/>
+  </UserControl.Resources>
+  <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}" VerticalScrollBarVisibility="Auto">
+    <Grid Margin="32,24,32,28" local:RunDim.ReduceMotion="{Binding ReduceMotion}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/><RowDefinition Height="20"/>
+        <RowDefinition Height="Auto"/><RowDefinition Height="12"/>
+        <RowDefinition Height="Auto"/><RowDefinition Height="12"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+
+      <StackPanel Orientation="Horizontal">
+        <Border Style="{StaticResource PageHeaderIconBadgeStyle}"><Path Data="{StaticResource Icon.Optimization}" Style="{StaticResource PageHeaderIconPathStyle}"/></Border>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="Optimization" Style="{StaticResource PageTitleStyle}"/>
+          <TextBlock Text="Run only the groups you need. Each one is a separate, undoable run." Style="{StaticResource PageSubtitleStyle}" Margin="0,6,0,0"/>
+        </StackPanel>
+      </StackPanel>
+
+      <Border Grid.Row="2" Style="{StaticResource HomeSurfaceCardStyle}"
+              local:RunDim.IsRunning="{Binding Optimization.Progress.IsRunning}">
+        <StackPanel>
+          <Grid>
+            <StackPanel>
+              <TextBlock Text="REVERSIBLE" Style="{StaticResource DataLabelStyle}"/>
+              <TextBlock Text="Undone completely, no restart needed."
+                         Margin="0,5,0,0" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12.5" TextWrapping="Wrap"/>
+            </StackPanel>
+            <Button Content="Run all safe" Command="{Binding Optimization.RunAllSafeCommand}"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Style="{StaticResource PrimaryButtonStyle}" Padding="16,7" MinHeight="0" FontSize="12.5"/>
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Optimization.SafeCategories}" Margin="0,14,0,0"
+                        ItemTemplate="{StaticResource CategoryCardTemplate}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+          </ItemsControl>
+
+          <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4,0,16"/>
+
+          <TextBlock Text="AGGRESSIVE" Style="{StaticResource DataLabelStyle}"/>
+          <TextBlock Text="Needs a restart, and some changes are permanent."
+                     Margin="0,5,0,0" Foreground="{StaticResource WarningBrush}" FontSize="12.5" TextWrapping="Wrap"/>
+          <ItemsControl ItemsSource="{Binding Optimization.AggressiveCategories}" Margin="0,14,0,0"
+                        ItemTemplate="{StaticResource CategoryCardTemplate}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="4" Style="{StaticResource HomeSurfaceCardStyle}"
+              local:RunDim.IsRunning="{Binding Optimization.Progress.IsRunning}">
+        <StackPanel>
+          <TextBlock Text="Selected changes" Style="{StaticResource SectionTitleStyle}"/>
+          <TextBlock Style="{StaticResource BodyMutedStyle}" Margin="0,7,0,0" TextWrapping="Wrap"
+                     Text="{Binding Optimization.LibrarySummary}"/>
+
+          <TextBlock Text="{Binding Optimization.CategorySummary}" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,18,0,0"/>
+          <Grid Height="6" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="{Binding Optimization.CategoryBreakdown[0].Count, Converter={StaticResource CountToStarConverter}}"/>
+              <ColumnDefinition Width="{Binding Optimization.CategoryBreakdown[1].Count, Converter={StaticResource CountToStarConverter}}"/>
+              <ColumnDefinition Width="{Binding Optimization.CategoryBreakdown[2].Count, Converter={StaticResource CountToStarConverter}}"/>
+              <ColumnDefinition Width="{Binding Optimization.CategoryBreakdown[3].Count, Converter={StaticResource CountToStarConverter}}"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="#8B5CF6" CornerRadius="3" Margin="0,0,3,0"/>
+            <Border Grid.Column="1" Background="#A34AEA" CornerRadius="3" Margin="0,0,3,0"/>
+            <Border Grid.Column="2" Background="#B93AD9" CornerRadius="3" Margin="0,0,3,0"/>
+            <Border Grid.Column="3" Background="#C026D3" CornerRadius="3"/>
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Optimization.CategoryBreakdown}" Margin="0,14,0,0">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <StackPanel HorizontalAlignment="Center">
+                  <Path Data="{Binding IconKey, Converter={StaticResource ResourceKeyConverter}}" Width="24" Height="24" Stretch="Uniform"
+                        Stroke="{StaticResource SecondaryTextBrush}" StrokeThickness="1.4" StrokeLineJoin="Round" HorizontalAlignment="Center"/>
+                  <TextBlock Text="{Binding DisplayName}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                  <TextBlock Text="{Binding CountLabel}" Foreground="{StaticResource PrimaryHoverBrush}" FontSize="12" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+        </StackPanel>
+      </Border>
+
+      <StackPanel Grid.Row="6">
+        <Border Style="{StaticResource HomeSurfaceCardStyle}">
+          <StackPanel>
+            <StackPanel Orientation="Horizontal">
+              <Button Style="{StaticResource PrimaryButtonStyle}" Content="Run every group" Command="{Binding Optimization.ApplyCommand}" Padding="22,11"/>
+              <Button Style="{StaticResource SecondaryButtonStyle}" Content="Undo captured settings" Command="{Binding Optimization.UndoCommand}" Margin="10,0,0,0" Padding="18,11"/>
+              <Button Style="{StaticResource SecondaryButtonStyle}" Content="Protected history" Command="{Binding Optimization.ProtectedHistoryCommand}" Margin="10,0,0,0" Padding="18,11"/>
+            </StackPanel>
+            <local:ApplyPanel DataContext="{Binding Optimization.Progress}" Margin="0,16,0,0"
+                              ReduceMotion="{Binding DataContext.ReduceMotion, RelativeSource={RelativeSource AncestorType=UserControl}}">
+              <local:ApplyPanel.Style>
+                <Style TargetType="local:ApplyPanel">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsRunning}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                    <DataTrigger Binding="{Binding HasOutcome}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </local:ApplyPanel.Style>
+            </local:ApplyPanel>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

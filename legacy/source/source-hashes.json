@@ -1,0 +1,19 @@
+{
+  "Files": [
+    {
+      "Path": "66mods Tweaks v40012(RUN AS ADMIN).bat",
+      "Bytes": 268420,
+      "Sha256": "EFF11EB08D47D84A2E07C26B792B7E9D7E1E175C434100A79CEBDF1A5C02F1B5"
+    },
+    {
+      "Path": "Fixes/Fix Disabled WiFi (RUN AS ADMIN).bat",
+      "Bytes": 153,
+      "Sha256": "5E3930B01539B45525F96E831C068589D392C1A79DF9D20B86610C33C7B6FAD4"
+    },
+    {
+      "Path": "Fixes/Fix Fortnite Not Starting (RUN AS ADMIN).bat",
+      "Bytes": 421,
+      "Sha256": "8800D8BF0060E79E07E0BD45636FAA2E2F3480C0B62F57F0CFCC001EE8F683CF"
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+<UserControl x:Class="Tweaker.App.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Tweaker.App.Views">
+  <UserControl.Resources>
+    <local:HardwareSegmentConverter x:Key="HardwareSegmentConverter"/>
+    <local:WindowsSummaryConverter x:Key="WindowsSummaryConverter"/>
+    <local:ScoreArcConverter x:Key="ScoreArcConverter"/>
+    <local:ResourceKeyConverter x:Key="ResourceKeyConverter"/>
+    <local:CountToStarConverter x:Key="CountToStarConverter"/>
+  </UserControl.Resources>
+
+  <!-- Home is fixed-height by design, so it scrolls rather than clipping on a smaller window or at 125/150% DPI. -->
+  <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}" VerticalScrollBarVisibility="Auto">
+  <Grid Margin="32,18,32,20" local:Entrance.ReduceMotion="{Binding ReduceMotion}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="58"/>
+      <RowDefinition Height="14"/>
+      <RowDefinition Height="190"/>
+      <RowDefinition Height="12"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="12"/>
+      <RowDefinition Height="84"/>
+      <RowDefinition Height="12"/>
+      <RowDefinition Height="*" MinHeight="300"/>
+      <RowDefinition Height="12"/>
+      <RowDefinition Height="74"/>
+    </Grid.RowDefinitions>
+
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock x:Name="GreetingText" Text="Good afternoon" Style="{StaticResource PageTitleStyle}"/>
+        <TextBlock FontSize="15" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,3,0,0">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock">
+              <Setter Property="Text" Value="Checking your system status"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding Home.ScanState}" Value="System ready"><Setter Property="Text" Value="Your system is ready to optimize"/></DataTrigger>
+                <DataTrigger Binding="{Binding Home.ScanState}" Value="Scanning"><Setter Property="Text" Value="Scanning hardware and supported software"/></DataTrigger>
+                <DataTrigger Binding="{Binding Home.ScanState}" Value="Scan failed"><Setter Property="Text" Value="The last system scan did not finish"/></DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+      </StackPanel>
+
+      <Border Grid.Column="1" VerticalAlignment="Center" Padding="16,10" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="9">
+        <StackPanel Orientation="Horizontal">
+          <Ellipse Width="9" Height="9" Margin="0,0,10,0" VerticalAlignment="Center">
+            <Ellipse.Style>
+              <Style TargetType="Ellipse">
+                <Setter Property="Fill" Value="{StaticResource WarningBrush}"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding Home.ScanState}" Value="System ready"><Setter Property="Fill" Value="{StaticResource StatusSuccessBrush}"/></DataTrigger>
+                  <DataTrigger Binding="{Binding Home.ScanState}" Value="Scan failed"><Setter Property="Fill" Value="{StaticResource DangerBrush}"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Ellipse.Style>
+          </Ellipse>
+          <TextBlock Text="{Binding Home.ScanState}" FontSize="14" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Border>
+      <Button Grid.Column="3" Style="{StaticResource IconButtonStyle}" Click="Settings_OnClick" ToolTip="Settings">
+        <Path Data="{StaticResource Icon.SettingsOutline}" Width="21" Height="21" Stretch="Uniform" Stroke="{StaticResource TextBrush}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+      </Button>
+    </Grid>
+
+    <Border Grid.Row="2" Background="{StaticResource HeroGradientBrush}" BorderBrush="{StaticResource HeroBorderBrush}"
+            BorderThickness="1" CornerRadius="14" ClipToBounds="True" local:Entrance.Order="0">
+      <Grid>
+      <local:AuroraBackdrop ReduceMotion="{Binding ReduceMotion}"/>
+      <Grid Margin="32,14,30,14">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="228"/></Grid.ColumnDefinitions>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="{Binding Optimization.HeroTitle}" FontSize="27" FontWeight="SemiBold" FontFamily="Segoe UI Variable Display"/>
+          <TextBlock Text="{Binding Optimization.HeroSubtitle}" Margin="0,8,0,0" FontSize="15"
+                     Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="400" HorizontalAlignment="Left"/>
+          <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+            <Button Content="Review recommendations" Style="{StaticResource PrimaryButtonStyle}" Click="ReviewRecommendations_OnClick" Padding="20,10"/>
+            <Button Content="Run new scan" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding Home.ScanCommand}" Margin="10,0,0,0" Padding="20,10"/>
+          </StackPanel>
+        </StackPanel>
+
+        <local:ScoreRing Grid.Column="1" x:Name="Score" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Score="{Binding Optimization.OptimizationScore}"
+                         Tag="{Binding Optimization.ScoreCaption}"
+                         ReduceMotion="{Binding ReduceMotion}"
+                         ToolTip="Share of everything this app can improve that is already in place."/>
+      </Grid>
+      </Grid>
+    </Border>
+
+    <!--
+      Live readings, sampled once a second. Deliberately limited to what Windows reports about itself:
+      temperatures, clocks and fan speeds need a kernel-mode driver, and shipping one in an unsigned
+      binary is the fastest route to an antivirus detection. Nothing here is estimated.
+    -->
+    <UniformGrid Grid.Row="4" Columns="5" x:Name="LiveRow" local:Entrance.Order="1">
+      <UniformGrid.Style>
+        <Style TargetType="UniformGrid">
+          <Setter Property="Visibility" Value="Collapsed"/>
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding Home.HasLiveMetrics}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </UniformGrid.Style>
+      <Border Style="{StaticResource LiveTileStyle}" Margin="0,0,5,0">
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="CPU" Style="{StaticResource DataLabelStyle}"/>
+          <Grid Margin="0,7,0,0" Height="46">
+            <local:Sparkline Values="{Binding Home.CpuHistory}" Stroke="{StaticResource PrimaryHoverBrush}"
+                             VerticalAlignment="Bottom" Height="30"/>
+            <TextBlock Text="{Binding Home.CpuLoadPercent, StringFormat={}{0}%}" Style="{StaticResource LiveValueStyle}"
+                       VerticalAlignment="Top"/>
+          </Grid>
+        </StackPanel>
+      </Border>
+      <Border Style="{StaticResource LiveTileStyle}" Margin="5,0">
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="MEMORY" Style="{StaticResource DataLabelStyle}"/>
+          <Grid Margin="0,7,0,0" Height="46">
+            <local:Sparkline Values="{Binding Home.MemoryHistory}" Stroke="{StaticResource GameFortniteBrush}"
+                             VerticalAlignment="Bottom" Height="30"/>
+            <TextBlock Text="{Binding Home.MemoryLoadPercent, StringFormat={}{0}%}" Style="{StaticResource LiveValueStyle}"
+                       VerticalAlignment="Top"/>
+          </Grid>
+        </StackPanel>
+      </Border>
+      <Border Style="{StaticResource LiveTileStyle}" Margin="5,0">
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="RAM IN USE" Style="{StaticResource DataLabelStyle}"/>
+          <TextBlock Text="{Binding Home.MemoryText}" Style="{StaticResource LiveValueStyle}" FontSize="17"
+                     TextTrimming="CharacterEllipsis" Margin="0,7,0,0"/>
+        </StackPanel>
+      </Border>
+      <Border Style="{StaticResource LiveTileStyle}" Margin="5,0">
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="PROCESSES" Style="{StaticResource DataLabelStyle}"/>
+          <TextBlock Text="{Binding Home.RunningProcesses}" Style="{StaticResource LiveValueStyle}" Margin="0,7,0,0"/>
+          <TextBlock Style="{StaticResource RowMetaStyle}" Margin="0,3,0,0"
+                     Text="{Binding Home.RunningServices, StringFormat={}{0} services running}"/>
+        </StackPanel>
+      </Border>
+      <Border Style="{StaticResource LiveTileStyle}" Margin="5,0,0,0">
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="UPTIME" Style="{StaticResource DataLabelStyle}"/>
+          <TextBlock Text="{Binding Home.UptimeText}" Style="{StaticResource LiveValueStyle}" FontSize="17"
+                     TextTrimming="CharacterEllipsis" Margin="0,7,0,0"/>
+        </StackPanel>
+      </Border>
+    </UniformGrid>
+
+    <UniformGrid Grid.Row="6" Columns="4" local:Entrance.Order="2">
+      <Border Style="{StaticResource HardwareCardStyle}" Margin="0,0,5,0">
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="42"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Path Data="{StaticResource Icon.CpuOutline}" Style="{StaticResource HardwareIconPathStyle}"/><StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="{Binding Home.HardwareHeadline, Converter={StaticResource HardwareSegmentConverter}, ConverterParameter=0}" Style="{StaticResource RowTitleStyle}" TextTrimming="CharacterEllipsis"/><TextBlock Text="CPU" Style="{StaticResource RowMetaStyle}" Margin="0,2,0,0"/></StackPanel></Grid>
+      </Border>
+      <Border Style="{StaticResource HardwareCardStyle}" Margin="5,0">
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="42"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Path Data="{StaticResource Icon.GpuOutline}" Style="{StaticResource HardwareIconPathStyle}"/><StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="{Binding Home.HardwareHeadline, Converter={StaticResource HardwareSegmentConverter}, ConverterParameter=1}" Style="{StaticResource RowTitleStyle}" TextTrimming="CharacterEllipsis"/><TextBlock Text="GPU" Style="{StaticResource RowMetaStyle}" Margin="0,2,0,0"/></StackPanel></Grid>
+      </Border>
+      <Border Style="{StaticResource HardwareCardStyle}" Margin="5,0">
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="42"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Path Data="{StaticResource Icon.MemoryOutline}" Style="{StaticResource HardwareIconPathStyle}"/><StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="{Binding Home.HardwareHeadline, Converter={StaticResource HardwareSegmentConverter}, ConverterParameter=2}" Style="{StaticResource RowTitleStyle}" TextTrimming="CharacterEllipsis"/><TextBlock Text="Memory" Style="{StaticResource RowMetaStyle}" Margin="0,2,0,0"/></StackPanel></Grid>
+      </Border>
+      <Border Style="{StaticResource HardwareCardStyle}" Margin="5,0,0,0">
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="42"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Path Data="{StaticResource Icon.WindowsOutline}" Style="{StaticResource HardwareIconPathStyle}"/><StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="{Binding Home.StatusDetail, Converter={StaticResource WindowsSummaryConverter}}" Style="{StaticResource RowTitleStyle}" TextTrimming="CharacterEllipsis"/><TextBlock Text="Windows" Style="{StaticResource RowMetaStyle}" Margin="0,2,0,0"/></StackPanel></Grid>
+      </Border>
+    </UniformGrid>
+
+    <Grid Grid.Row="8" local:Entrance.Order="3">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="1.02*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="0.98*"/></Grid.ColumnDefinitions>
+
+      <Border Style="{StaticResource HomeSurfaceCardStyle}">
+        <Grid Margin="4,0">
+          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="6"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+          <Grid><TextBlock Text="Recommended changes" Style="{StaticResource SectionTitleStyle}"/><Button Content="Review all  ›" Style="{StaticResource HyperlinkButtonStyle}" Click="ReviewRecommendations_OnClick" HorizontalAlignment="Right" Foreground="{StaticResource SecondaryTextBrush}"/></Grid>
+          <TextBlock Grid.Row="2" Text="{Binding Optimization.CategorySummary}" Foreground="{StaticResource SecondaryTextBrush}"/>
+
+          <StackPanel Grid.Row="3" VerticalAlignment="Center">
+          <Grid Height="6">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="{Binding Optimization.CategoryBreakdown[0].Count, Converter={StaticResource CountToStarConverter}}"/>
+              <ColumnDefinition Width="{Binding Optimization.CategoryBreakdown[1].Count, Converter={StaticResource CountToStarConverter}}"/>
+              <ColumnDefinition Width="{Binding Optimization.CategoryBreakdown[2].Count, Converter={StaticResource CountToStarConverter}}"/>
+              <ColumnDefinition Width="{Binding Optimization.CategoryBreakdown[3].Count, Converter={StaticResource CountToStarConverter}}"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="#8B5CF6" CornerRadius="3" Margin="0,0,3,0"/>
+            <Border Grid.Column="1" Background="#A34AEA" CornerRadius="3" Margin="0,0,3,0"/>
+            <Border Grid.Column="2" Background="#B93AD9" CornerRadius="3" Margin="0,0,3,0"/>
+            <Border Grid.Column="3" Background="#C026D3" CornerRadius="3"/>
+          </Grid>
+
+          <UniformGrid Columns="4" Margin="0,22,0,0">
+            <StackPanel HorizontalAlignment="Center">
+              <Path Data="{StaticResource Icon.WindowsOutline}" Width="26" Height="26" Stretch="Uniform" Stroke="{StaticResource SecondaryTextBrush}" StrokeThickness="1.4" StrokeLineJoin="Round"/>
+              <TextBlock Text="{Binding Optimization.CategoryBreakdown[0].DisplayName}" Margin="0,8,0,0" HorizontalAlignment="Center"/>
+              <TextBlock Text="{Binding Optimization.CategoryBreakdown[0].CountLabel}" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12" HorizontalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Center">
+              <Path Data="{StaticResource Icon.GameOutline}" Width="26" Height="26" Stretch="Uniform" Stroke="{StaticResource SecondaryTextBrush}" StrokeThickness="1.4" StrokeLineJoin="Round"/>
+              <TextBlock Text="{Binding Optimization.CategoryBreakdown[1].DisplayName}" Margin="0,8,0,0" HorizontalAlignment="Center"/>
+              <TextBlock Text="{Binding Optimization.CategoryBreakdown[1].CountLabel}" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12" HorizontalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Center">
+              <Path Data="{StaticResource Icon.CategoryNetwork}" Width="26" Height="26" Stretch="Uniform" Stroke="{StaticResource SecondaryTextBrush}" StrokeThickness="1.4" StrokeLineJoin="Round"/>
+              <TextBlock Text="{Binding Optimization.CategoryBreakdown[2].DisplayName}" Margin="0,8,0,0" HorizontalAlignment="Center"/>
+              <TextBlock Text="{Binding Optimization.CategoryBreakdown[2].CountLabel}" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12" HorizontalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Center">
+              <Path Data="{StaticResource Icon.CategoryGpu}" Width="26" Height="26" Stretch="Uniform" Stroke="{StaticResource SecondaryTextBrush}" StrokeThickness="1.4" StrokeLineJoin="Round"/>
+              <TextBlock Text="{Binding Optimization.CategoryBreakdown[3].DisplayName}" Margin="0,8,0,0" HorizontalAlignment="Center"/>
+              <TextBlock Text="{Binding Optimization.CategoryBreakdown[3].CountLabel}" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12" HorizontalAlignment="Center"/>
+            </StackPanel>
+          </UniformGrid>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="2" Style="{StaticResource HomeSurfaceCardStyle}" Padding="18,16">
+        <Grid Margin="4,0">
+          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="12"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+          <Grid><TextBlock Text="Detected games" Style="{StaticResource SectionTitleStyle}"/><TextBlock Text="{Binding Home.InstalledGames, StringFormat={}{0} detected}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}"/></Grid>
+          <ItemsControl Grid.Row="2" ItemsSource="{Binding GameCards}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Style="{StaticResource GameRowStyle}">
+                  <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="42"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <Border Width="28" Height="28" Background="#0E1017" CornerRadius="8" HorizontalAlignment="Left">
+                      <Path Data="{Binding IconKey, Converter={StaticResource ResourceKeyConverter}}" Width="15" Height="15" Stretch="Uniform"
+                            Fill="{Binding AccentKey, Converter={StaticResource ResourceKeyConverter}}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="2,0,8,0">
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="{StaticResource SubtleTextBrush}" Margin="0,1,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Status}" FontSize="12" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                          <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource SubtleTextBrush}"/>
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsDetected}" Value="True"><Setter Property="Foreground" Value="{StaticResource StatusSuccessBrush}"/></DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </TextBlock.Style>
+                      </TextBlock>
+                      <Path Data="{StaticResource Icon.CheckCircle}" Width="15" Height="15" Stretch="Uniform" Margin="7,0,0,0"
+                            Fill="{StaticResource StatusSuccessBrush}" VerticalAlignment="Center">
+                        <Path.Style>
+                          <Style TargetType="Path">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsDetected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Path.Style>
+                      </Path>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="10" Style="{StaticResource HomeSurfaceCardStyle}" Padding="18,12" local:Entrance.Order="4">
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="58"/><ColumnDefinition Width="1.3*"/><ColumnDefinition Width="1"/><ColumnDefinition Width="0.9*"/><ColumnDefinition Width="0.7*"/><ColumnDefinition Width="1"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <Border Width="44" Height="44" Background="{StaticResource PrimarySoftBrush}" BorderBrush="#4A3264" BorderThickness="1" CornerRadius="10" HorizontalAlignment="Left">
+          <Path Data="{StaticResource Icon.HistoryOutline}" Width="23" Height="23" Stretch="Uniform" Stroke="{StaticResource PrimaryHoverBrush}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+        </Border>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,14,0">
+          <TextBlock Text="Last optimization" Style="{StaticResource RowTitleStyle}"/>
+          <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+            <TextBlock Text="{Binding History.LastOptimization.StatusText}" Tag="{Binding History.LastOptimization.StatusKind}"
+                       Style="{StaticResource InlineStatusStyle}"/>
+            <TextBlock Text="{Binding History.LastOptimization.Timestamp}" FontSize="12" Margin="8,0,0,0"
+                       Foreground="{StaticResource SubtleTextBrush}" TextTrimming="CharacterEllipsis"/>
+          </StackPanel>
+        </StackPanel>
+        <Border Grid.Column="2" Width="1" Background="{StaticResource BorderBrush}" Margin="0,6"/>
+        <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+          <Path Data="{StaticResource Icon.CheckCircle}" Width="17" Height="17" Stretch="Uniform" Fill="{StaticResource StatusSuccessBrush}"/>
+          <TextBlock Text="{Binding History.LastOptimization.AppliedLabel}" Margin="8,0,0,0" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+          <Path Data="{StaticResource Icon.CrossCircle}" Width="17" Height="17" Stretch="Uniform" VerticalAlignment="Center">
+            <Path.Style>
+              <Style TargetType="Path">
+                <Setter Property="Fill" Value="{StaticResource DangerBrush}"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding History.LastOptimization.Failed}" Value="0"><Setter Property="Fill" Value="{StaticResource DisabledBrush}"/></DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Path.Style>
+          </Path>
+          <TextBlock Text="{Binding History.LastOptimization.FailedLabel}" Margin="8,0,0,0" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}"/>
+        </StackPanel>
+        <Border Grid.Column="5" Width="1" Background="{StaticResource BorderBrush}" Margin="0,6"/>
+        <Button Grid.Column="6" Content="Undo last changes" Command="{Binding Optimization.UndoCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="18,8" Margin="18,0,0,0"/>
+      </Grid>
+    </Border>
+  </Grid>
+  </ScrollViewer>
+</UserControl>

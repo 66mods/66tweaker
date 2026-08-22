@@ -1,0 +1,8 @@
+﻿bin/
+obj/
+.vs/
+artifacts/
+.wrangler/
+.worktrees/
+*.user
+*.suo

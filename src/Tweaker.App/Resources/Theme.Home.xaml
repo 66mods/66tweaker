@@ -1,0 +1,96 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StreamGeometry x:Key="Icon.HomeOutline">M3,11 L12,3 L21,11 M5,10 L5,21 L10,21 L10,15 L14,15 L14,21 L19,21 L19,10</StreamGeometry>
+  <StreamGeometry x:Key="Icon.OptimizeOutline">M3,18 L8.5,12.5 L12.5,15.5 L20.5,6.5 M15.5,6.5 L20.5,6.5 L20.5,11.5</StreamGeometry>
+  <StreamGeometry x:Key="Icon.GameOutline">M7,8 L17,8 C19,8 20.5,9.4 21,11.3 L22,15.5 C22.4,18 20.8,20 18.5,20 L15.7,20 L13.7,17 L10.3,17 L8.3,20 L5.5,20 C3.2,20 1.6,18 2,15.5 L3,11.3 C3.5,9.4 5,8 7,8 M6,12 L6,17 M3.5,14.5 L8.5,14.5 M16.5,13.5 L16.6,13.5 M19,16 L19.1,16</StreamGeometry>
+  <StreamGeometry x:Key="Icon.RestoreOutline">M4,7 L4,12 L9,12 M4.8,11.5 A8,8 0 1 0 6.2,6.2</StreamGeometry>
+  <StreamGeometry x:Key="Icon.SettingsOutline">M12,8 A4,4 0 1 0 12,16 A4,4 0 1 0 12,8 M12,2 L13.2,4.2 L15.5,5 L17.8,4.2 L19.8,6.2 L19,8.5 L20,10.8 L22,12 L20,13.2 L19,15.5 L19.8,17.8 L17.8,19.8 L15.5,19 L13.2,20 L12,22 L10.8,20 L8.5,19 L6.2,19.8 L4.2,17.8 L5,15.5 L4,13.2 L2,12 L4,10.8 L5,8.5 L4.2,6.2 L6.2,4.2 L8.5,5 L10.8,4.2 Z</StreamGeometry>
+  <StreamGeometry x:Key="Icon.CpuOutline">M7,7 L17,7 L17,17 L7,17 Z M10,10 L14,10 L14,14 L10,14 Z M9,2 L9,7 M12,2 L12,7 M15,2 L15,7 M9,17 L9,22 M12,17 L12,22 M15,17 L15,22 M2,9 L7,9 M2,12 L7,12 M2,15 L7,15 M17,9 L22,9 M17,12 L22,12 M17,15 L22,15</StreamGeometry>
+  <StreamGeometry x:Key="Icon.GpuOutline">M2.5,6 L18.5,6 L18.5,17 L2.5,17 Z M18.5,9 L21.5,9 L21.5,14 L18.5,14 M7.5,8.6 A2.9,2.9 0 1 0 7.5,14.4 A2.9,2.9 0 1 0 7.5,8.6 M7.5,10.8 A0.7,0.7 0 1 0 7.5,12.2 A0.7,0.7 0 1 0 7.5,10.8 M12.6,9.4 L15.8,9.4 M12.6,11.5 L15.8,11.5 M12.6,13.6 L15.8,13.6 M5.5,17 L5.5,20 M15,17 L15,20</StreamGeometry>
+  <StreamGeometry x:Key="Icon.MemoryOutline">M2.5,7.5 L21.5,7.5 L21.5,16.5 L2.5,16.5 Z M6,10.5 L10,10.5 L10,13.5 L6,13.5 Z M14,10.5 L18,10.5 L18,13.5 L14,13.5 Z M6,16.5 L6,19.2 M12,16.5 L12,19.2 M18,16.5 L18,19.2</StreamGeometry>
+  <StreamGeometry x:Key="Icon.WindowsOutline">M3,4 L10.5,3 L10.5,11 L3,11 Z M13,2.8 L21,2 L21,11 L13,11 Z M3,13 L10.5,13 L10.5,21 L3,20 Z M13,13 L21,13 L21,22 L13,21.2 Z</StreamGeometry>
+  <StreamGeometry x:Key="Icon.ChevronRightOutline">M9,5 L16,12 L9,19</StreamGeometry>
+  <StreamGeometry x:Key="Icon.DiscordOutline">M7,7 C10,5.5 14,5.5 17,7 C19,10 20,14 20,17 C18,19 16.5,20 15,20 L13.5,18 L10.5,18 L9,20 C7.5,20 6,19 4,17 C4,14 5,10 7,7 M8.5,13.5 L8.6,13.5 M15.5,13.5 L15.6,13.5</StreamGeometry>
+  <StreamGeometry x:Key="Icon.HistoryOutline">M4,12 A8,8 0 1 0 6.3,6.3 M4,5 L4,10 L9,10 M12,7 L12,12 L16,14</StreamGeometry>
+
+  <Style x:Key="NavigationButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Height" Value="50"/>
+    <Setter Property="Margin" Value="0,3"/>
+    <Setter Property="Padding" Value="16,0"/>
+    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="FontSize" Value="15"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToggleButton">
+          <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10">
+            <Grid>
+              <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+              <Border x:Name="GoldEdge" Width="2" Height="28" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{StaticResource GoldBrush}" CornerRadius="1" Visibility="Collapsed"/>
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <MultiTrigger><MultiTrigger.Conditions><Condition Property="IsMouseOver" Value="True"/><Condition Property="IsChecked" Value="False"/></MultiTrigger.Conditions><Setter TargetName="Frame" Property="Background" Value="{StaticResource HoverBrush}"/><Setter Property="Foreground" Value="{StaticResource TextBrush}"/></MultiTrigger>
+            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource PressedBrush}"/></Trigger>
+            <Trigger Property="IsChecked" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource AccentGradientBrush}"/><Setter TargetName="Frame" Property="BorderBrush" Value="#7E4DE1"/><Setter Property="Foreground" Value="White"/><Setter TargetName="GoldEdge" Property="Visibility" Value="Visible"/></Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Opacity" Value="0.45"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="AdvancedNavigationButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource NavigationButtonStyle}">
+    <Setter Property="Height" Value="34"/>
+    <Setter Property="Margin" Value="0,1"/>
+    <Setter Property="Padding" Value="12,0"/>
+    <Setter Property="FontSize" Value="12"/>
+  </Style>
+
+  <Style x:Key="IconButtonStyle" TargetType="Button" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Width" Value="44"/><Setter Property="Height" Value="44"/>
+    <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/><Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource HoverBrush}"/><Setter TargetName="Frame" Property="BorderBrush" Value="#3A3F4C"/></Trigger><Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource PressedBrush}"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Opacity" Value="0.45"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+  </Style>
+
+  <!--
+    The border is a gradient rather than one colour: brighter across the top edge, fading to the base by
+    the bottom. That single hairline is what gives a flat dark card the sense of sitting above the page.
+  -->
+  <Style x:Key="HomeSurfaceCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+    <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+    <Setter Property="Effect" Value="{StaticResource SoftCardShadow}"/>
+    <Setter Property="BorderBrush">
+      <Setter.Value>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+          <GradientStop Color="#2E3340" Offset="0"/>
+          <GradientStop Color="#292D38" Offset="0.35"/>
+          <GradientStop Color="#23262F" Offset="1"/>
+        </LinearGradientBrush>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="HardwareCardStyle" TargetType="Border" BasedOn="{StaticResource HomeSurfaceCardStyle}">
+    <Setter Property="Padding" Value="18,15"/>
+    <Setter Property="CornerRadius" Value="11"/>
+  </Style>
+  <Style x:Key="GameRowStyle" TargetType="Border">
+    <Setter Property="Background" Value="{StaticResource RaisedSurfaceBrush}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="9"/>
+    <Setter Property="Padding" Value="10,5"/>
+    <Setter Property="Margin" Value="0,0,0,4"/>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="#3A3F4C"/></Trigger>
+    </Style.Triggers>
+  </Style>
+</ResourceDictionary>

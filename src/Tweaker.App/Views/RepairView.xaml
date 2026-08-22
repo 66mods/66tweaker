@@ -1,0 +1,91 @@
+<UserControl x:Class="Tweaker.App.Views.RepairView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}" VerticalScrollBarVisibility="Auto">
+    <Grid Margin="32,24,32,28">
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="20"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+
+      <StackPanel Orientation="Horizontal">
+        <Border Style="{StaticResource PageHeaderIconBadgeStyle}"><Path Data="{StaticResource Icon.Repair}" Style="{StaticResource PageHeaderIconPathStyle}"/></Border>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="Repair Center" Style="{StaticResource PageTitleStyle}"/>
+          <TextBlock Text="Inspect first, then repair only the subsystem you selected." Style="{StaticResource PageSubtitleStyle}" Margin="0,6,0,0"/>
+        </StackPanel>
+      </StackPanel>
+
+      <Grid Grid.Row="2">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="320"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+
+        <Border Style="{StaticResource HomeSurfaceCardStyle}" Padding="18,16">
+          <StackPanel>
+            <TextBlock Text="Repair action" Style="{StaticResource SectionTitleStyle}"/>
+            <TextBlock Text="Only allowlisted Windows tools are available here." Style="{StaticResource RowMetaStyle}" Margin="0,6,0,12" TextWrapping="Wrap"/>
+            <ListBox ItemsSource="{Binding Repair.Actions}" SelectedItem="{Binding Repair.SelectedAction, Mode=TwoWay}"
+                     Style="{x:Null}" Background="Transparent" BorderThickness="0" Padding="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem" BasedOn="{StaticResource FocusVisual}">
+                  <Setter Property="Margin" Value="0,0,0,6"/>
+                  <Setter Property="Padding" Value="0"/>
+                  <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                  <Setter Property="Cursor" Value="Hand"/>
+                  <Setter Property="Template">
+                    <Setter.Value>
+                      <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Frame" Background="{StaticResource RaisedSurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12,10">
+                          <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="#3A3F4C"/></Trigger>
+                          <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Frame" Property="Background" Value="{StaticResource PrimarySoftBrush}"/>
+                            <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                          </Trigger>
+                          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/></Trigger>
+                        </ControlTemplate.Triggers>
+                      </ControlTemplate>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </ListBox.ItemContainerStyle>
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Horizontal">
+                    <Path Data="{StaticResource Icon.Repair}" Width="15" Height="15" Stretch="Uniform" Fill="{StaticResource PrimaryHoverBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Name}" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="13.5" TextTrimming="CharacterEllipsis"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="2" Style="{StaticResource HomeSurfaceCardStyle}" Padding="20,18">
+          <StackPanel>
+            <TextBlock Text="{Binding Repair.SelectedAction.Name}" Style="{StaticResource SectionTitleStyle}"/>
+            <TextBlock Text="{Binding Repair.SelectedAction.Description}" Style="{StaticResource BodyMutedStyle}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+
+            <TextBlock Text="REQUIREMENTS" Style="{StaticResource DataLabelStyle}" Margin="0,18,0,6"/>
+            <TextBlock Text="{Binding Repair.SelectedAction.Requirements}" Foreground="{StaticResource GoldBrush}" TextWrapping="Wrap"/>
+
+            <Border Style="{StaticResource OutcomeBannerStyle}" Tag="Warning" Margin="0,18,0,0">
+              <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="30"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Path Data="{StaticResource Icon.Warning}" Width="20" Height="20" Stretch="Uniform" Fill="{StaticResource GoldBrush}" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="1" Text="Only the selected Windows tool runs, and only after you confirm."
+                           Style="{StaticResource RowMetaStyle}" Foreground="{StaticResource GoldBrush}" TextWrapping="Wrap"/>
+              </Grid>
+            </Border>
+
+            <Button Content="Review and run" Command="{Binding Repair.RunCommand}" Style="{StaticResource PrimaryButtonStyle}"
+                    HorizontalAlignment="Left" Margin="0,18,0,0" Padding="22,11"/>
+
+            <Border Style="{StaticResource OutcomeBannerStyle}" Margin="0,16,0,0" Padding="13,11">
+              <TextBlock Text="{Binding Repair.Status}" Style="{StaticResource RowMetaStyle}" TextWrapping="Wrap"/>
+            </Border>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

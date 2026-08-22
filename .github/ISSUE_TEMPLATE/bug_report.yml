@@ -1,0 +1,65 @@
+name: Bug report
+description: Something went wrong during a run, or the app behaved unexpectedly.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The single most useful thing you can attach is `C:\ProgramData\66mods Tweaker\worker.log`.
+        It records every command the elevated helper ran and what each one returned.
+
+        It contains registry paths and values from your PC. Read it before you post it, and remove
+        anything you would rather not publish.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown at the bottom of the sidebar.
+      placeholder: "0.9.17"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and display scaling
+      placeholder: "Windows 11 24H2, 150%"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where did it happen?
+      options:
+        - An optimization group on the Optimize page
+        - A game profile on the Games page
+        - Restore or History
+        - Repair Center
+        - The interface itself (layout, text, navigation)
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: worker.log
+      description: Paste the relevant part, or attach the file. Skip this if the run never started.
+      render: text
+
+  - type: checkboxes
+    id: undo
+    attributes:
+      label: Did you try Undo?
+      options:
+        - label: I tried restoring the run from the Restore page
+        - label: The restore also failed (say so above — that matters more than the original failure)

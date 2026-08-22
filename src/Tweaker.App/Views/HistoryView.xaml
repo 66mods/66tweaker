@@ -1,0 +1,89 @@
+<UserControl x:Class="Tweaker.App.Views.HistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}" VerticalScrollBarVisibility="Auto">
+    <Grid Margin="32,24,32,28">
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="20"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+
+      <StackPanel Orientation="Horizontal">
+        <Border Style="{StaticResource PageHeaderIconBadgeStyle}"><Path Data="{StaticResource Icon.History}" Style="{StaticResource PageHeaderIconPathStyle}"/></Border>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="History" Style="{StaticResource PageTitleStyle}"/>
+          <TextBlock Text="Local transaction log. No data leaves this PC." Style="{StaticResource PageSubtitleStyle}" Margin="0,6,0,0"/>
+        </StackPanel>
+      </StackPanel>
+
+      <Grid Grid.Row="2">
+        <Border>
+          <Border.Style>
+            <Style TargetType="Border" BasedOn="{StaticResource HomeSurfaceCardStyle}">
+              <Setter Property="Visibility" Value="Collapsed"/>
+              <Style.Triggers><DataTrigger Binding="{Binding History.HasItems}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+            </Style>
+          </Border.Style>
+          <StackPanel>
+            <Grid Margin="0,0,0,14">
+              <TextBlock Text="Recorded sessions" Style="{StaticResource SectionTitleStyle}"/>
+              <TextBlock Text="{Binding History.LastOptimization.Timestamp, StringFormat=Latest: {0}}" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}"/>
+            </Grid>
+            <ItemsControl ItemsSource="{Binding History.Items}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border Style="{StaticResource GameRowStyle}" Padding="14,11">
+                    <Grid>
+                      <Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                      <TextBlock Text="{Binding StartedAt}" FontFamily="Cascadia Mono" FontSize="12.5" VerticalAlignment="Center" Foreground="{StaticResource SecondaryTextBrush}"/>
+                      <Border Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <Border.Style>
+                          <Style TargetType="Border" BasedOn="{StaticResource StatusBadgeStyle}">
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding Status}" Value="Completed"><Setter Property="BorderBrush" Value="{StaticResource StatusSuccessBrush}"/></DataTrigger>
+                              <DataTrigger Binding="{Binding Status}" Value="Rolled back"><Setter Property="BorderBrush" Value="{StaticResource GoldBrush}"/></DataTrigger>
+                              <DataTrigger Binding="{Binding Status}" Value="Interrupted"><Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/></DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding Status}">
+                          <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource DataLabelStyle}">
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="Completed"><Setter Property="Foreground" Value="{StaticResource StatusSuccessBrush}"/></DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Rolled back"><Setter Property="Foreground" Value="{StaticResource GoldBrush}"/></DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Interrupted"><Setter Property="Foreground" Value="{StaticResource DangerBrush}"/></DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </TextBlock.Style>
+                        </TextBlock>
+                      </Border>
+                      <TextBlock Grid.Column="2" Text="{Binding Summary}" Style="{StaticResource BodyMutedStyle}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <Border>
+          <Border.Style>
+            <Style TargetType="Border" BasedOn="{StaticResource HomeSurfaceCardStyle}">
+              <Setter Property="Visibility" Value="Visible"/>
+              <Style.Triggers><DataTrigger Binding="{Binding History.HasItems}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
+            </Style>
+          </Border.Style>
+          <StackPanel HorizontalAlignment="Center" Margin="0,26">
+            <Border Width="56" Height="56" Background="{StaticResource PrimarySoftBrush}" BorderBrush="#4A3264" BorderThickness="1" CornerRadius="14" HorizontalAlignment="Center">
+              <Path Data="{StaticResource Icon.HistoryOutline}" Width="28" Height="28" Stretch="Uniform" Stroke="{StaticResource PrimaryHoverBrush}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            </Border>
+            <TextBlock Text="No local history yet" Style="{StaticResource SectionTitleStyle}" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+            <TextBlock Text="{Binding History.EmptyMessage}" Style="{StaticResource BodyMutedStyle}" HorizontalAlignment="Center" Margin="0,8,0,0" MaxWidth="420" TextAlignment="Center" TextWrapping="Wrap"/>
+            <Border Style="{StaticResource OutcomeBannerStyle}" Tag="Warning" Margin="0,20,0,0" MaxWidth="560">
+              <TextBlock Text="Open Optimize to make your first change."
+                         Style="{StaticResource RowMetaStyle}" Foreground="{StaticResource GoldBrush}" TextWrapping="Wrap"/>
+            </Border>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

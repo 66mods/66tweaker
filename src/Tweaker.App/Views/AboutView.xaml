@@ -1,0 +1,119 @@
+<UserControl x:Class="Tweaker.App.Views.AboutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Tweaker.App.Views">
+  <!--
+    One page in place of Mega FPS, Experimental and Legacy Lab. All three were read-only text with no
+    command on them, so three sidebar entries promised an action and delivered a paragraph.
+  -->
+  <ScrollViewer Style="{StaticResource DarkScrollViewerStyle}" VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="32,24,32,28">
+
+      <StackPanel Orientation="Horizontal">
+        <Border Style="{StaticResource PageHeaderIconBadgeStyle}">
+          <Path Data="{StaticResource Icon.Legacy}" Style="{StaticResource PageHeaderIconPathStyle}"/>
+        </Border>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="About the tweaks" Style="{StaticResource PageTitleStyle}"/>
+          <TextBlock Text="What the presets do, and what this app will not do." Style="{StaticResource PageSubtitleStyle}" Margin="0,6,0,0"/>
+        </StackPanel>
+      </StackPanel>
+
+      <!-- Section 1: the game presets, previously the Mega FPS page. -->
+      <Border Style="{StaticResource HomeSurfaceCardStyle}" Margin="0,20,0,0">
+        <StackPanel>
+          <TextBlock Text="Game presets" Style="{StaticResource SectionTitleStyle}"/>
+          <TextBlock Text="Apply them from the Games page." Style="{StaticResource BodyMutedStyle}" Margin="0,6,0,0"/>
+          <UniformGrid Columns="2" Margin="0,16,0,0">
+            <Border Style="{StaticResource InfoTileStyle}" Margin="0,0,6,0">
+              <StackPanel>
+                <TextBlock Text="Mega FPS" Style="{StaticResource RowTitleStyle}" FontSize="14.5"/>
+                <TextBlock Text="Frames over looks, image still readable." Style="{StaticResource RowMetaStyle}" Margin="0,5,0,10" TextWrapping="Wrap"/>
+                <TextBlock Text="· Blurry textures, no filtering" Style="{StaticResource RowMetaStyle}"/>
+                <TextBlock Text="· Reduced foliage and post-processing" Style="{StaticResource RowMetaStyle}"/>
+                <TextBlock Text="· Softer internal 3D rendering" Style="{StaticResource RowMetaStyle}"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource InfoTileStyle}" Margin="6,0,0,0">
+              <StackPanel>
+                <TextBlock Text="Ultra Potato" Style="{StaticResource RowTitleStyle}" FontSize="14.5"/>
+                <TextBlock Text="The most frames this app can buy you." Style="{StaticResource RowMetaStyle}" Margin="0,5,0,10" TextWrapping="Wrap"/>
+                <TextBlock Text="· Lowest graphics quality the client allows" Style="{StaticResource RowMetaStyle}"/>
+                <TextBlock Text="· Nameplates, overlays and counters off" Style="{StaticResource RowMetaStyle}"/>
+                <TextBlock Text="· No antialiasing, filtering or ambient occlusion" Style="{StaticResource RowMetaStyle}"/>
+                <TextBlock Text="· Laptop frame caps and G-SYNC off" Style="{StaticResource RowMetaStyle}"/>
+              </StackPanel>
+            </Border>
+          </UniformGrid>
+          <Border Style="{StaticResource StatusChipStyle}" Tag="Warning" Padding="12" Margin="0,14,0,0">
+            <TextBlock Text="Your monitor resolution is never changed." Style="{StaticResource RowMetaStyle}"
+                       Foreground="{StaticResource GoldBrush}" TextWrapping="Wrap"/>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <!-- Section 2: the refusals, previously the Experimental page. -->
+      <Border Style="{StaticResource HomeSurfaceCardStyle}" Margin="0,12,0,0">
+        <StackPanel>
+          <TextBlock Text="What this app will not do" Style="{StaticResource SectionTitleStyle}"/>
+          <TextBlock Text="Deliberate limits, not missing features." Style="{StaticResource BodyMutedStyle}" Margin="0,6,0,0"/>
+          <ItemsControl Margin="0,14,0,0">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <Border Style="{StaticResource InfoTileStyle}" Margin="0,0,6,8">
+              <StackPanel>
+                <TextBlock Text="Disable Defender or mitigations" Style="{StaticResource RowTitleStyle}" FontSize="13.5" TextWrapping="Wrap"/>
+                <TextBlock Text="Trades real safety for no measured frames." Style="{StaticResource RowMetaStyle}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource InfoTileStyle}" Margin="6,0,0,8">
+              <StackPanel>
+                <TextBlock Text="Overclock or change voltages" Style="{StaticResource RowTitleStyle}" FontSize="13.5" TextWrapping="Wrap"/>
+                <TextBlock Text="Hardware-specific and not reversible by us." Style="{StaticResource RowMetaStyle}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource InfoTileStyle}" Margin="0,0,6,0">
+              <StackPanel>
+                <TextBlock Text="Write undocumented GPU values" Style="{StaticResource RowTitleStyle}" FontSize="13.5" TextWrapping="Wrap"/>
+                <TextBlock Text="Drivers ignore them; the effect cannot be checked." Style="{StaticResource RowMetaStyle}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+            <Border Style="{StaticResource InfoTileStyle}" Margin="6,0,0,0">
+              <StackPanel>
+                <TextBlock Text="Touch anti-cheat or Windows Update" Style="{StaticResource RowTitleStyle}" FontSize="13.5" TextWrapping="Wrap"/>
+                <TextBlock Text="Bans and broken updates are not worth it." Style="{StaticResource RowMetaStyle}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+          </ItemsControl>
+          <TextBlock Text="For driver settings, use your GPU vendor's own application."
+                     Style="{StaticResource BodyMutedStyle}" Margin="0,14,0,0" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+
+      <!-- Section 3: provenance, previously the Legacy Lab page. -->
+      <Border Style="{StaticResource HomeSurfaceCardStyle}" Margin="0,12,0,0">
+        <StackPanel>
+          <TextBlock Text="Where the tweaks come from" Style="{StaticResource SectionTitleStyle}"/>
+          <TextBlock Text="Imported from the original 66mods batch script and frozen." Style="{StaticResource BodyMutedStyle}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+
+          <!--
+            One figure, not three. The other two columns held the words "Checked" and "Refused" set in the
+            same 21px face as the count beside them, so the row read as three statistics of which only one
+            was a number. We do not record how many commands were replaced or blocked, so they are stated
+            as what they are: sentences.
+          -->
+          <StackPanel Margin="0,16,0,0">
+            <TextBlock Text="COMMANDS KEPT AS THEY WERE" Style="{StaticResource DataLabelStyle}"/>
+            <TextBlock Text="{Binding Optimization.SelectedEffectCount}" Style="{StaticResource RowTitleStyle}" FontSize="27" Margin="0,5,0,0"/>
+          </StackPanel>
+          <TextBlock Margin="0,12,0,0" Style="{StaticResource RowMetaStyle}" TextWrapping="Wrap"
+                     Text="Unsafe commands were swapped for a safe equal. Anything with no safe equal was refused, and each refusal records why."/>
+          <!-- The audit summarises; the command-by-command ledger is the manifest. Naming the summary as
+               "the full ledger" sent anyone who checked to the wrong file. -->
+          <TextBlock Text="Every command is listed in the repository: legacy/parity-manifest.json for the full ledger, docs/IMPLEMENTATION-AUDIT.md for the summary."
+                     Style="{StaticResource RowMetaStyle}" Margin="0,16,0,0" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -1,0 +1,68 @@
+<UserControl x:Class="Tweaker.App.Views.ApplyPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+  <Grid>
+    <!-- Running state: the phase text names the stage that is actually executing. -->
+    <Border x:Name="RunningPanel">
+      <Border.Style>
+        <Style TargetType="Border" BasedOn="{StaticResource OutcomeBannerStyle}">
+          <Setter Property="Visibility" Value="Collapsed"/>
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding IsRunning}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Border.Style>
+      <StackPanel>
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <!-- The ring reports the effect counter the worker narrates, so it measures rather than spins. -->
+          <ContentControl Content="{Binding}" ContentTemplate="{StaticResource RunRingTemplate}" VerticalAlignment="Top"/>
+          <StackPanel Grid.Column="1" Margin="22,6,0,0">
+            <Grid>
+              <TextBlock Text="Working" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource PrimaryHoverBrush}"/>
+              <!-- Elapsed time is the only honest signal that a long run is still alive. -->
+              <TextBlock x:Name="ElapsedText" HorizontalAlignment="Right" FontSize="13" FontFamily="Cascadia Mono"
+                         Foreground="{StaticResource SubtleTextBrush}"/>
+            </Grid>
+            <TextBlock Text="{Binding Phase}" Margin="0,7,0,0" FontSize="13.5"
+                       Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap"/>
+            <Border Style="{StaticResource RunIndicatorStyle}" Margin="0,14,0,0" x:Name="Track">
+              <Border x:Name="Sweep" Style="{StaticResource RunIndicatorSweepStyle}">
+                <Border.RenderTransform><TranslateTransform x:Name="SweepShift" X="-150"/></Border.RenderTransform>
+              </Border>
+            </Border>
+          </StackPanel>
+        </Grid>
+        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource RunConsoleTemplate}" Margin="0,16,0,0"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Finished state: real counts, and a dismiss so the banner never becomes stale furniture. -->
+    <Border Tag="{Binding OutcomeKind}">
+      <Border.Style>
+        <Style TargetType="Border" BasedOn="{StaticResource OutcomeBannerStyle}">
+          <Setter Property="Visibility" Value="Collapsed"/>
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding HasOutcome}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Border.Style>
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <Path Style="{StaticResource OutcomeIconStyle}" HorizontalAlignment="Left"/>
+        <StackPanel Grid.Column="1" Margin="4,0,12,0">
+          <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="14.5" TextWrapping="Wrap"/>
+          <TextBlock Text="{Binding Detail}" Margin="0,4,0,0" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap"/>
+        </StackPanel>
+        <Button Grid.Column="2" Content="Dismiss" Command="{Binding DismissCommand}" VerticalAlignment="Top"
+                Style="{StaticResource SecondaryButtonStyle}" Padding="14,7" MinHeight="0"/>
+        <ContentControl Grid.Row="1" Grid.ColumnSpan="3" Content="{Binding}" Margin="0,14,0,0"
+                        ContentTemplate="{StaticResource RunChangeTemplate}"/>
+        <ContentControl Grid.Row="2" Grid.ColumnSpan="3" Content="{Binding}" Margin="0,10,0,0"
+                        ContentTemplate="{StaticResource RunConsoleTemplate}"/>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
