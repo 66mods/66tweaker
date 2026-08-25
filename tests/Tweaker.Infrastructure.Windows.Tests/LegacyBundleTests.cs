@@ -17,9 +17,15 @@ public sealed class LegacyBundleTests
         bundle.CanonicalEffectCount.Should().Be(1500);
         bundle.Effects.SelectMany(x => x.SourceFingerprints).Should().HaveCount(1917);
         bundle.Effects.Select(x => x.CanonicalFingerprint).Should().OnlyHaveUniqueItems();
-        bundle.Effects.Count(x => !x.Executable).Should().Be(7);
+        bundle.Effects.Count(x => !x.Executable).Should().Be(12);
+        // Two reasons now, not one: output resolution, and the five boot settings that switch off a
+        // Windows security feature. Every exclusion still has to say which, so nothing is dropped silently.
         bundle.Effects.Where(x => !x.Executable).Should().OnlyContain(x =>
-            x.SkipReason!.Contains("resolution", StringComparison.OrdinalIgnoreCase));
+            !string.IsNullOrWhiteSpace(x.SkipReason));
+        bundle.Effects.Count(x => !x.Executable &&
+            x.SkipReason!.Contains("resolution", StringComparison.OrdinalIgnoreCase)).Should().Be(7);
+        bundle.Effects.Count(x => !x.Executable &&
+            x.SkipReason!.Contains("security feature", StringComparison.OrdinalIgnoreCase)).Should().Be(5);
     }
 
     [Fact]
@@ -48,9 +54,9 @@ public sealed class LegacyBundleTests
         operations.Select(x => x.Descriptor.Id).Should().StartWith(
             ["legacy.bundle.safe", "legacy.bundle.gaming", "legacy.bundle.maximum", "legacy.bundle.full"]);
         var full = operations.Cast<LegacyBundleOperation>().Single(x => x.Category is null && x.Profile == LegacyBundleProfile.FullLegacy);
-        full.CanonicalEffectCount.Should().Be(1493);
+        full.CanonicalEffectCount.Should().Be(1488);
         full.SourceFingerprintCount.Should().BeLessThanOrEqualTo(1917);
-        full.ExcludedResolutionEffects.Should().Be(7);
+        full.ExcludedResolutionEffects.Should().Be(12);
     }
 
     [Fact]

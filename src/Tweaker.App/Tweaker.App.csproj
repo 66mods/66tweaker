@@ -7,9 +7,9 @@
     <AssemblyName>66mods Tweaker</AssemblyName>
     <Product>66mods Tweaker</Product>
     <Authors>66mods</Authors>
-    <Version>1.0.0</Version>
-    <FileVersion>1.0.0.0</FileVersion>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Version>1.1.0</Version>
+    <FileVersion>1.1.0.0</FileVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
     <Description>Local reversible Windows performance control center by 66mods.</Description>
     <Copyright>66mods 2026</Copyright>
     <ApplicationIcon>Assets\66mods-logo.ico</ApplicationIcon>

@@ -6,5 +6,5 @@ internal static class LegacyBundleIdentity
     internal const int SchemaVersion = 1;
     internal const int SourceFingerprintCount = 1917;
     internal const int CanonicalEffectCount = 1500;
-    internal const string Sha256 = "B6AA8D0C12DF3020CE9ED03071F40479BA01C3E19B734CF7C908107790D0C35A";
+    internal const string Sha256 = "0986C8B4AA9814017DAC3AB1889C2242CEADB0DDEDD7B2A38EE20BC33F3DDAAF";
 }

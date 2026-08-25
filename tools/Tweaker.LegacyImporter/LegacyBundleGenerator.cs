@@ -78,11 +78,25 @@ internal static class LegacyBundleIdentity
             command.Contains("Remove-Item", StringComparison.OrdinalIgnoreCase) ||
             command.Contains(" sc delete ", StringComparison.OrdinalIgnoreCase) ||
             command.Contains("/delete", StringComparison.OrdinalIgnoreCase);
-        var securityReduction = command.Contains("Set-ProcessMitigation", StringComparison.OrdinalIgnoreCase) ||
+        // Five boot-configuration settings that switch off security features the README and the About page
+        // both state are never touched: Early Launch Anti-Malware, code integrity services, Virtual Secure
+        // Mode, the hypervisor behind Memory Integrity, and the PAE setting that DEP depends on. The
+        // documentation was right about the intent and wrong about the build.
+        //
+        // Only these five. The other boot-configuration commands in the bundle are left alone.
+        var securityBootSettings = new[]
+        {
+            "disableelamdrivers", "integrityservices", "vsmlaunchtype", "hypervisorlaunchtype", "pae",
+        };
+        var bootConfiguration = canonical.Kind is LegacyCommandKind.BcdEdit &&
+            securityBootSettings.Any(x => command.Contains(x, StringComparison.OrdinalIgnoreCase));
+        var securityReduction = bootConfiguration ||
+            command.Contains("Set-ProcessMitigation", StringComparison.OrdinalIgnoreCase) ||
             command.Contains("Disable-WindowsOptionalFeature", StringComparison.OrdinalIgnoreCase) ||
             command.Contains("EnableLUA", StringComparison.OrdinalIgnoreCase) ||
             command.Contains("SmartScreen", StringComparison.OrdinalIgnoreCase) ||
             command.Contains("Defender", StringComparison.OrdinalIgnoreCase);
+        var blocked = resolution || bootConfiguration;
         var section = canonical.Section.ToLowerInvariant();
         var gaming = IsGaming(section) || canonical.Kind is LegacyCommandKind.PowerCfg or LegacyCommandKind.Netsh;
         var safe = canonical.Kind is LegacyCommandKind.RegistryAdd &&
@@ -90,17 +104,19 @@ internal static class LegacyBundleIdentity
             command.Contains("HKCU", StringComparison.OrdinalIgnoreCase);
         var maximum = !irreversible && !securityReduction && canonical.Kind != LegacyCommandKind.FileDeletion;
         var profiles = new List<string>();
-        if (!resolution)
+        if (!blocked)
         {
             if (safe) profiles.Add("safe");
             if (gaming || safe) profiles.Add("gaming");
             if (maximum) profiles.Add("maximum");
             profiles.Add("full");
         }
+        var skipReason = resolution ? "Output-resolution changes are excluded by product policy."
+            : bootConfiguration ? "Excluded: this disables a Windows security feature this product states it does not change."
+            : null;
         return new($"legacy-{index + 1:D4}", canonical.Fingerprint, lines.Select(x => x.Fingerprint).ToArray(),
             canonical.SourceFile, canonical.LineNumber, canonical.Section, canonical.Kind.ToString(), command,
-            profiles, !resolution, resolution ? "Output-resolution changes are excluded by product policy." : null,
-            irreversible, securityReduction);
+            profiles, !blocked, skipReason, irreversible, securityReduction);
     }
 
     private static bool IsGaming(string section) => section is

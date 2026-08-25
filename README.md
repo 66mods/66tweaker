@@ -6,7 +6,7 @@ Most tweakers are a button and a promise. This one records the original value of
 touching it, checks afterwards that the change actually landed, prints every command as it goes, and keeps a
 transaction journal so a run can be undone. No telemetry, no updater, no ads, no network calls.
 
-> **1.0.** Every optimization group has been run on real hardware. It still changes your system in ways
+> **1.1.** Every optimization group has been run on real hardware. It still changes your system in ways
 > some of which need a restart and one of which cannot be undone — read
 > [Before you run it](#before-you-run-it) before your first run.
 
@@ -41,7 +41,7 @@ and is its own transaction, so a failure in one leaves the others applied.
 | GPU & DirectX | 372 | NVIDIA / AMD / Intel latency and scheduling, DirectX |
 | Network & Ping | 124 | Nagle, TCP stack, per-adapter latency |
 | Mouse & Keyboard | 48 | Pointer acceleration, polling delays. Fully reversible |
-| Windows | 251 | Telemetry, background tasks, visual overhead |
+| Windows | 246 | Telemetry, background tasks, visual overhead |
 | Memory | 5 | Paging and cache policy for the installed RAM |
 | Debloat & Services | 108 | Bundled apps and services. **Uninstalls cannot be undone** |
 
@@ -97,7 +97,7 @@ preinstalled on Windows 10 — that is why the download is around 79 MB.
 | `src/Tweaker.Infrastructure.Windows` | Registry, power, NVAPI, the effect bundle |
 | `legacy/` | The original batch scripts and the bundle compiled from them |
 | `tools/Tweaker.LegacyImporter` | Turns those scripts into the frozen bundle |
-| `tests/` | 492 tests, including real WPF rendering and pipe round-trips |
+| `tests/` | 500 tests, including real WPF rendering and pipe round-trips |
 | `docs/RELEASE-CHECKLIST.md` | What has been verified, and what has not |
 
 ## Where the tweaks come from
