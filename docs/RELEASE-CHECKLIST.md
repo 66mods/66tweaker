@@ -18,7 +18,29 @@
       says so in the README. Signing removes the SmartScreen warning; it is unrelated to the licence, so
       the warning stays and the published SHA-256 is what users check instead.
 
-Verified local artifact: `artifacts\66mods-tweaker-1.0.0\66mods Tweaker.exe` v1.0.0, 78,751,932 bytes, SHA-256 `0886801606D512ABCFC1994504023B0C322B5830E3955299344A48F34F8C6BF2`, built 21 Aug 2026. The published folder contains the single executable only. The exact published process opened `MainWindowTitle = 66mods Tweaker` and remained responsive during the non-mutating smoke test. Automated acceptance covers real WPF layout at three window sizes across all eight pages, clipping and collision checks, navigation, focus, motion policy and window controls, with captured evidence under `docs/acceptance/frontend-redesign`.
+Verified local artifact: `artifacts\66mods-tweaker-1.1.0\66mods Tweaker.exe` v1.1.0, 78,752,053 bytes, SHA-256 `B65767AD6E87178E8453D410AB7CB427A40BAE509D11DC340A6EF679211C229B`, built 21 Aug 2026. The published folder contains the single executable only. The exact published process opened `MainWindowTitle = 66mods Tweaker` and remained responsive during the non-mutating smoke test. Automated acceptance covers real WPF layout at three window sizes across all eight pages, clipping and collision checks, navigation, focus, motion policy and window controls, with captured evidence under `docs/acceptance/frontend-redesign`.
+
+## 1.1
+
+Five boot-configuration settings are no longer executed:
+
+    bcdedit /set disableelamdrivers yes
+    bcdedit /set integrityservices disable
+    bcdedit /set vsmlaunchtype off
+    bcdedit /set hypervisorlaunchtype off
+    bcdedit /set pae ForceDisable
+
+They switch off Early Launch Anti-Malware, code integrity services, Virtual Secure Mode, the hypervisor
+behind Memory Integrity, and the PAE setting DEP depends on. The README and the About page both state
+this product does not touch any of them. The documentation was right about the intent and wrong about
+the build, so the build is what changed.
+
+The Windows group drops from 251 changes to 246, and the total from 1115 to 1110. Nothing else changed.
+
+**What this does not fix.** BitLocker seals its key to the boot configuration, so the twenty remaining
+`bcdedit` commands still send an encrypted machine to a recovery-key prompt on the next start — which is
+how this was found, on a real user's machine. Undo does not cover any of them either: snapshots capture
+registry values, and bcdedit is a process. Both are open.
 
 ## 1.0
 
