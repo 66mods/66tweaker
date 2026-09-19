@@ -94,11 +94,14 @@ public sealed class OptimizationViewModel : ObservableObject
     /// Undoing only the newest would land on whichever profile was applied before it.
     /// </summary>
     private readonly List<OptimizationSession> appliedSessions = [];
+    /// <summary>The group a run is for, so the narration names it rather than the preset behind it.</summary>
+    private string? runningGroupName;
+    private string RunName => runningGroupName ?? SelectedProfile;
     private readonly IMachineStateReader? machineState;
     private string protectedRecoveryId = string.Empty;
     private string lastResult = "Review exact changes before applying.";
     private string selectedProfile = "Safe";
-    private string profileDescription = "Low-risk legacy preferences with exact registry snapshots.";
+    private string profileDescription = "Low-risk preferences with exact registry snapshots.";
     private int? optimizationScore;
     private string scoreCaption = "Not scored";
     private CancellationTokenSource? scoreCancellation;
@@ -126,6 +129,8 @@ public sealed class OptimizationViewModel : ObservableObject
         RunAllSafeCommand = new AsyncCommand(RunAllSafeAsync, error => Fail("Safe groups failed", error));
         SelectAllCategoriesCommand = new RelayCommand(() => SetAllCategories(true));
         ClearCategoriesCommand = new RelayCommand(() => SetAllCategories(false));
+        SelectRecommendedCommand = new RelayCommand(SelectRecommended);
+        RunSelectedCommand = new AsyncCommand(RunSelectedAsync, error => Fail("Run failed", error));
         ProtectedHistoryCommand = new AsyncCommand(ReviewProtectedHistoryAsync, error => LastResult = $"Protected history failed: {error.Message}");
         ResumeProtectedCommand = new AsyncCommand(ResumeProtectedAsync, error => LastResult = $"Protected resume failed: {error.Message}");
         RollbackProtectedCommand = new AsyncCommand(RollbackProtectedAsync, error => LastResult = $"Protected rollback failed: {error.Message}");
@@ -166,17 +171,13 @@ public sealed class OptimizationViewModel : ObservableObject
 
     public bool HasSafeCategories => SafeCategories.Count > 0;
 
-    /// <summary>Runs only the reversible groups, in order. Never touches the aggressive ones.</summary>
+    /// <summary>Runs only the reversible groups, as one transaction. Never touches the aggressive ones.</summary>
     public AsyncCommand RunAllSafeCommand { get; private set; } = null!;
 
-    private async Task RunAllSafeAsync(CancellationToken cancellationToken)
+    private Task RunAllSafeAsync(CancellationToken cancellationToken)
     {
-        foreach (var choice in SafeCategories.ToArray())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            await RunCategoryAsync(choice, cancellationToken);
-            if (choice.State == CategoryRunState.Failed) break;
-        }
+        var safe = SafeCategories.ToArray();
+        return safe.Length == 0 ? Task.CompletedTask : RunTransactionAsync(safe, "the safe groups", cancellationToken);
     }
 
     public bool HasCategories => Categories.Count > 0;
@@ -190,6 +191,45 @@ public sealed class OptimizationViewModel : ObservableObject
         1 => $"1 group selected - {SelectedEffectCount} changes",
         _ => $"{SelectedCategoryCount} groups selected - {SelectedEffectCount} changes"
     };
+
+    /// <summary>The ticked groups, in page order. Home shows them as a strip; the run button counts them.</summary>
+    public ObservableCollection<CategoryChoice> SelectedCategories { get; } = [];
+
+    /// <summary>Changes in the ticked groups only — what the Optimize button will actually write.</summary>
+    public int SelectedChangeCount => Categories.Where(x => x.IsSelected).Sum(x => x.EffectCount);
+    public bool SelectedRequiresRestart => Categories.Any(x => x.IsSelected && x.RequiresRestart);
+    public string RunLabel => SelectedChangeCount == 1 ? "1 change" : $"{SelectedChangeCount} changes";
+    public string SelectedSummary => SelectedCategoryCount == 0 ? "Nothing selected"
+        : $"{SelectedCategoryCount} selected · {RunLabel}";
+
+    /// <summary>Every group except the ones marked risky and the ones already applied this session.</summary>
+    public RelayCommand SelectRecommendedCommand { get; private set; } = null!;
+
+    /// <summary>
+    /// Runs every ticked group as one transaction: one review, one administrator prompt, one worker run
+    /// and one journal entry to undo. A refusal anywhere rolls the whole run back, which is what a single
+    /// press of one button has to mean; six prompts for six groups is not.
+    /// </summary>
+    public AsyncCommand RunSelectedCommand { get; private set; } = null!;
+
+    private void SelectRecommended()
+    {
+        foreach (var category in Categories)
+            category.IsSelected = !category.IsExperimental && category.State != CategoryRunState.Applied;
+    }
+
+    private async Task RunSelectedAsync(CancellationToken cancellationToken)
+    {
+        var chosen = Categories.Where(x => x.IsSelected).ToArray();
+        if (chosen.Length == 0)
+        {
+            LastResult = "No groups selected.";
+            Progress.Complete(ApplyOutcome.Warning, "Nothing selected", "Tick at least one group on the Optimize page.");
+            return;
+        }
+        var name = chosen.Length == 1 ? chosen[0].Name : $"{chosen.Length} groups";
+        await RunTransactionAsync(chosen, name, cancellationToken);
+    }
 
     public RelayCommand SelectAllCategoriesCommand { get; private set; } = null!;
     public RelayCommand ClearCategoriesCommand { get; private set; } = null!;
@@ -211,6 +251,9 @@ public sealed class OptimizationViewModel : ObservableObject
         }
         RaisePropertyChanged(nameof(HasCategories));
         RaisePropertyChanged(nameof(HasSafeCategories));
+        // Ticked from the start so the Optimize button on Home has something to run. Risky groups are
+        // left for the user to tick themselves; nothing here runs without the worker's confirmation anyway.
+        SelectRecommended();
         OnCategorySelectionChanged();
     }
 
@@ -224,6 +267,17 @@ public sealed class OptimizationViewModel : ObservableObject
         foreach (var item in Items)
             item.IsSelected = item.Operation is LegacyBundleOperation bundle &&
                 bundle.Category is not null && chosen.Contains(bundle.Category.Id);
+        // Rebuilt rather than patched: it is seven items, and order has to follow the page.
+        var selected = Categories.Where(x => x.IsSelected).ToArray();
+        if (!selected.SequenceEqual(SelectedCategories))
+        {
+            SelectedCategories.Clear();
+            foreach (var choice in selected) SelectedCategories.Add(choice);
+        }
+        RaisePropertyChanged(nameof(SelectedChangeCount));
+        RaisePropertyChanged(nameof(SelectedRequiresRestart));
+        RaisePropertyChanged(nameof(RunLabel));
+        RaisePropertyChanged(nameof(SelectedSummary));
         RaisePropertyChanged(nameof(SelectedCategoryCount));
         RaisePropertyChanged(nameof(AnyCategorySelected));
         RaisePropertyChanged(nameof(AllCategoriesSelected));
@@ -328,6 +382,16 @@ public sealed class OptimizationViewModel : ObservableObject
     };
     private int Measured { get; set; }
     private int Remaining { get; set; }
+    public int MeasuredCount => Measured;
+    public int RemainingCount => Remaining;
+
+    /// <summary>The line under the big number: "26 of 38 waiting", or what stands in for it before a measurement.</summary>
+    public string ScoreDetail => OptimizationScore switch
+    {
+        null => "not measured yet",
+        100 => "everything in place",
+        _ => $"{Remaining} of {Measured} waiting"
+    };
 
     /// <summary>
     /// Measures the selected profile read-only on a background thread. Never elevates and never mutates,
@@ -409,6 +473,9 @@ public sealed class OptimizationViewModel : ObservableObject
         ScoreCaption = caption;
         RaisePropertyChanged(nameof(HeroTitle));
         RaisePropertyChanged(nameof(HeroSubtitle));
+        RaisePropertyChanged(nameof(ScoreDetail));
+        RaisePropertyChanged(nameof(MeasuredCount));
+        RaisePropertyChanged(nameof(RemainingCount));
     }
     public AsyncCommand ApplyCommand { get; }
     public AsyncCommand UndoCommand { get; }
@@ -477,37 +544,49 @@ public sealed class OptimizationViewModel : ObservableObject
         foreach (var category in Categories) category.IsSelected = selected;
     }
 
+    /// <summary>The Run button on one card: that group alone, as its own transaction.</summary>
+    private Task RunCategoryAsync(CategoryChoice choice, CancellationToken cancellationToken) =>
+        RunTransactionAsync([choice], choice.Name, cancellationToken);
+
     /// <summary>
-    /// Applies one group as its own transaction. Running each group separately is what makes a failure
-    /// local: a refusal in one group no longer discards the groups that already succeeded.
+    /// Applies the given groups as one transaction and reports on them. The selection is only the way
+    /// the run tells the item list what to write, so the user's own ticks are put back afterwards; the
+    /// groups that were just applied come off, since running them again is not what the button means.
     /// </summary>
-    private async Task RunCategoryAsync(CategoryChoice choice, CancellationToken cancellationToken)
+    private async Task RunTransactionAsync(IReadOnlyList<CategoryChoice> groups, string name, CancellationToken cancellationToken)
     {
+        var ticked = Categories.Where(x => x.IsSelected).ToArray();
         foreach (var other in Categories)
         {
-            other.IsSelected = ReferenceEquals(other, choice);
+            other.IsSelected = groups.Contains(other);
             other.IsEnabled = false;
         }
-        choice.State = CategoryRunState.Running;
+        foreach (var group in groups) group.State = CategoryRunState.Running;
+        runningGroupName = name;
         // Read the machine before and after so the result can report what measurably moved, rather than
         // how many commands were sent. Reading is free and read-only; if it fails the report is omitted.
         var before = ReadMachineState();
         try
         {
-            // Through the same gate as every other mutating command, so a group run cannot overlap an
-            // Undo or a recovery started from another page.
-            await RunExclusiveAsync(() => ApplySelectedCoreAsync(cancellationToken));
-            choice.State = CategoryRunState.Applied;
-            Progress.PublishChange(Measure(before));
+            // Through the same gate as every other mutating command, so a run cannot overlap an Undo or a
+            // recovery started from another page.
+            var applied = await RunExclusiveAsync(() => ApplySelectedCoreAsync(cancellationToken));
+            foreach (var group in groups) group.State = applied ? CategoryRunState.Applied : CategoryRunState.Ready;
+            if (applied) Progress.PublishChange(Measure(before));
         }
         catch (Exception error)
         {
-            choice.State = CategoryRunState.Failed;
-            Fail($"{choice.Name} failed", error);
+            foreach (var group in groups) group.State = CategoryRunState.Failed;
+            Fail($"{name} failed", error);
         }
         finally
         {
-            foreach (var other in Categories) other.IsEnabled = true;
+            runningGroupName = null;
+            foreach (var other in Categories)
+            {
+                other.IsEnabled = true;
+                other.IsSelected = ticked.Contains(other) && other.State != CategoryRunState.Applied;
+            }
         }
     }
 
@@ -520,10 +599,10 @@ public sealed class OptimizationViewModel : ObservableObject
     {
         ProfileDescription = SelectedProfile switch
         {
-            "Safe" or "Safe Optimization" => "Low-risk legacy preferences with exact registry snapshots.",
-            "Gaming" or "Gaming Optimization" => "Gaming, input, power, GPU and network effects from the frozen BAT bundle.",
+            "Safe" or "Safe Optimization" => "Low-risk preferences with exact registry snapshots.",
+            "Gaming" or "Gaming Optimization" => "Gaming, input, power, GPU and network changes.",
             "Maximum Performance" => "Aggressive performance bundle without irreversible cleanup or security reductions.",
-            "Full Legacy Tweaks" => "All supported frozen BAT/Fixes effects. Cleanup and some actions are irreversible; rollback is best effort.",
+            "Full Legacy Tweaks" => "Every supported change. Cleanup and some actions are irreversible; rollback is best effort.",
             "Experimental" => "Hardware-dependent opt-in changes.",
             _ => "Manual selection."
         };
@@ -584,14 +663,15 @@ public sealed class OptimizationViewModel : ObservableObject
     public Task ApplySelectedAsync(CancellationToken cancellationToken) =>
         RunExclusiveAsync(() => ApplySelectedCoreAsync(cancellationToken));
 
-    private async Task ApplySelectedCoreAsync(CancellationToken cancellationToken)
+    /// <returns>True when the selection was written; false when there was nothing to write or the review was declined.</returns>
+    private async Task<bool> ApplySelectedCoreAsync(CancellationToken cancellationToken)
     {
         var selectedItems = Items.Where(x => x.IsSelected).ToArray();
         if (selectedItems.Length == 0)
         {
             LastResult = "No changes selected.";
             Progress.Complete(ApplyOutcome.Warning, "Nothing selected", LastResult);
-            return;
+            return false;
         }
         var requiresAdvanced = selectedItems.Any(x => x.Operation.Descriptor.Risk != RiskLevel.Safe);
         var requiresExperimental = selectedItems.Any(x => x.Operation.Descriptor.Risk == RiskLevel.Experimental);
@@ -606,7 +686,7 @@ public sealed class OptimizationViewModel : ObservableObject
         {
             LastResult = "Cancelled after review. No changes were made.";
             Progress.Complete(ApplyOutcome.Warning, "Cancelled", LastResult);
-            return;
+            return false;
         }
         Progress.Advance("Capturing exact snapshots…");
 
@@ -630,7 +710,7 @@ public sealed class OptimizationViewModel : ObservableObject
             // This one call covers the UAC prompt, the worker's own confirmation, and the entire run.
             // Full Legacy launches PowerShell 88 times at roughly a second each, so a few minutes here is
             // normal; saying "waiting for approval" for all of it made a working run look frozen.
-            Progress.Advance($"Approve the administrator prompt, then {SelectedProfile} is applied. " +
+            Progress.Advance($"Approve the administrator prompt, then {RunName} is applied. " +
                 "Large profiles take a few minutes — leave this window open.");
             var workerRequests = privilegedItems.Select(x => new PrivilegedOperationRequest(x.Operation.Descriptor.Id,
                 Infrastructure.Windows.Privilege.PrivilegedOperationDispatcher.DefaultValueId)).ToArray();
@@ -721,8 +801,9 @@ public sealed class OptimizationViewModel : ObservableObject
         var worker = privilegedTransaction is null ? string.Empty : $" - Scoped worker {privilegedTransaction.Value:N} completed";
         appliedSessions.Add(new(composite.Id, localId, privilegedTransaction));
         LastResult = $"Applied {applied} local mutation(s); {readOnly} read-only verification(s) succeeded{worker}.";
-        Progress.Complete(ApplyOutcome.Success, $"{SelectedProfile} applied",
+        Progress.Complete(ApplyOutcome.Success, $"{RunName} applied",
             $"{selectedItems.Length} operation(s) applied and verified. Display resolution unchanged. Use Undo to restore the exact captured state.");
+        return true;
     }
 
     private async Task ReviewProtectedHistoryAsync(CancellationToken cancellationToken)
@@ -859,6 +940,14 @@ public sealed class OptimizationViewModel : ObservableObject
         if (!await operationGate.WaitAsync(0))
             throw new InvalidOperationException("Another optimization operation is already in progress.");
         try { await operation(); }
+        finally { operationGate.Release(); }
+    }
+
+    private async Task<T> RunExclusiveAsync<T>(Func<Task<T>> operation)
+    {
+        if (!await operationGate.WaitAsync(0))
+            throw new InvalidOperationException("Another optimization operation is already in progress.");
+        try { return await operation(); }
         finally { operationGate.Release(); }
     }
 

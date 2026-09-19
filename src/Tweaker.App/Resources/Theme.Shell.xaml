@@ -1,0 +1,403 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:Tweaker.App.Views">
+  <!--
+    The 2.0 shell kit: pills, glass, toggles, the main button. Everything the three primary pages and the
+    Ask 66 panel are built from, so the pages themselves stay short.
+  -->
+
+  <!-- Navigation pill. Three of them in a glass capsule at the top of the window. -->
+  <Style x:Key="NavPillStyle" TargetType="ToggleButton" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Height" Value="32"/>
+    <Setter Property="Padding" Value="18,0"/>
+    <Setter Property="FontSize" Value="13.5"/>
+    <Setter Property="FontWeight" Value="Medium"/>
+    <Setter Property="Foreground" Value="{StaticResource Ink60Brush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToggleButton">
+          <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="16">
+            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{StaticResource TextBrush}"/></Trigger>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Frame" Property="Background" Value="{StaticResource Tint10Brush}"/>
+              <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Opacity" Value="0.45"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The "more" button beside the pills, and any other round glyph button on the shell. -->
+  <Style x:Key="GlyphButtonStyle" TargetType="Button" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Width" Value="36"/><Setter Property="Height" Value="32"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{StaticResource Ink60Brush}"/>
+    <Setter Property="BorderBrush" Value="Transparent"/><Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource Tint8Brush}"/><Setter Property="Foreground" Value="{StaticResource TextBrush}"/></Trigger>
+            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource Tint12Brush}"/></Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Opacity" Value="0.45"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The "more" menu: the five secondary pages and the community links. -->
+  <Style x:Key="ShellMenuStyle" TargetType="ContextMenu">
+    <Setter Property="Background" Value="#F2110F1A"/>
+    <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Padding" Value="6"/>
+    <Setter Property="HasDropShadow" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContextMenu">
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="14" Padding="{TemplateBinding Padding}" Margin="0,6,0,0">
+            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="ShellMenuItemStyle" TargetType="MenuItem" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+    <Setter Property="FontSize" Value="13.5"/>
+    <Setter Property="Padding" Value="14,9"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="MenuItem">
+          <Border x:Name="Frame" Background="Transparent" BorderThickness="1" BorderBrush="Transparent" CornerRadius="9" Padding="{TemplateBinding Padding}" MinWidth="200">
+            <ContentPresenter ContentSource="Header" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource Tint8Brush}"/></Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Opacity" Value="0.45"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="ShellMenuSeparatorStyle" TargetType="Separator">
+    <Setter Property="Background" Value="{StaticResource GlassBorderBrush}"/>
+    <Setter Property="Margin" Value="8,5"/>
+    <Setter Property="Height" Value="1"/>
+  </Style>
+
+  <!-- A glass panel: the Optimize page, the Ask 66 drawer. -->
+  <Style x:Key="GlassPanelStyle" TargetType="Border">
+    <Setter Property="Background" Value="{StaticResource GlassBrush}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="26"/>
+    <Setter Property="Padding" Value="26,24,26,22"/>
+  </Style>
+
+  <!-- The main action: a gradient capsule with a glow underneath. One per page. -->
+  <Style x:Key="CtaButtonStyle" TargetType="Button" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Height" Value="60"/>
+    <Setter Property="MinWidth" Value="180"/>
+    <Setter Property="Padding" Value="28,0"/>
+    <Setter Property="FontSize" Value="18"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FontFamily" Value="Segoe UI Variable Display"/>
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="Background" Value="{StaticResource AccentGradientBrush}"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Effect" Value="{StaticResource CtaGlow}"/>
+    <Setter Property="views:Magnetic.IsEnabled" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="30">
+            <Grid>
+              <Border CornerRadius="30" Height="1" VerticalAlignment="Top" Margin="20,1,20,0" Background="#40FFFFFF"/>
+              <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource AccentGradientHoverBrush}"/></Trigger>
+            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource AccentGradientPressedBrush}"/></Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Opacity" Value="0.45"/><Setter Property="Effect" Value="{x:Null}"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <!-- The secondary word inside a CTA: "· 304 changes". -->
+  <Style x:Key="CtaDetailStyle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="FontWeight" Value="Medium"/>
+    <Setter Property="FontFamily" Value="Segoe UI Variable Text"/>
+    <Setter Property="Foreground" Value="#CCFFFFFF"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Margin" Value="14,1,0,0"/>
+  </Style>
+
+  <!-- A quiet capsule button: "Configure", "Select recommended", the Ask 66 FAB. -->
+  <Style x:Key="GhostPillStyle" TargetType="Button" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Height" Value="40"/>
+    <Setter Property="Padding" Value="16,0"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="Background" Value="{StaticResource Tint10Brush}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource GlassEdgeBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="20">
+            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource Tint16Brush}"/></Trigger>
+            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource Tint12Brush}"/></Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Opacity" Value="0.45"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- An underlined text action: "Undo last run", "Reset driver profile". -->
+  <Style x:Key="LinkButtonStyle" TargetType="Button" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Foreground" Value="{StaticResource Ink60Brush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="2,2"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Frame" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" Padding="{TemplateBinding Padding}">
+            <TextBlock x:Name="Label" Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" FontSize="{TemplateBinding FontSize}" TextDecorations="Underline" TextWrapping="NoWrap"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{StaticResource TextBrush}"/></Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Opacity" Value="0.45"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- iOS-style switch. The card it sits on is the real click target; this only shows the state. -->
+  <Style x:Key="SwitchStyle" TargetType="CheckBox" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Width" Value="44"/><Setter Property="Height" Value="26"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CheckBox">
+          <Grid>
+            <Border x:Name="Track" CornerRadius="13" Background="{StaticResource Tint12Brush}" BorderBrush="Transparent" BorderThickness="1"/>
+            <Ellipse x:Name="Knob" Width="20" Height="20" Fill="White" Opacity="0.7" HorizontalAlignment="Left" Margin="3,0,0,0">
+              <Ellipse.Effect><DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.4"/></Ellipse.Effect>
+            </Ellipse>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Track" Property="Background" Value="{StaticResource AccentGradientBrush}"/>
+              <Setter TargetName="Knob" Property="Opacity" Value="1"/>
+              <Setter TargetName="Knob" Property="Margin" Value="21,0,0,0"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Track" Property="BorderThickness" Value="2"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Track" Property="Opacity" Value="0.45"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- State pill on a group card. Tag carries Ready, Running, Applied, Failed or Risky. -->
+  <Style x:Key="StatePillStyle" TargetType="Border">
+    <Setter Property="CornerRadius" Value="999"/>
+    <Setter Property="Padding" Value="9,4"/>
+    <Setter Property="Background" Value="{StaticResource Tint8Brush}"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Style.Triggers>
+      <Trigger Property="Tag" Value="Applied"><Setter Property="Background" Value="{StaticResource OkSoftBrush}"/></Trigger>
+      <Trigger Property="Tag" Value="Failed"><Setter Property="Background" Value="{StaticResource BadSoftBrush}"/></Trigger>
+      <Trigger Property="Tag" Value="Running"><Setter Property="Background" Value="{StaticResource RunningSoftBrush}"/></Trigger>
+      <Trigger Property="Tag" Value="Risky"><Setter Property="Background" Value="{StaticResource GoldSoftBrush}"/></Trigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="StatePillTextStyle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="11.5"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="{StaticResource Ink60Brush}"/>
+    <Style.Triggers>
+      <Trigger Property="Tag" Value="Applied"><Setter Property="Foreground" Value="{StaticResource StatusSuccessBrush}"/></Trigger>
+      <Trigger Property="Tag" Value="Failed"><Setter Property="Foreground" Value="{StaticResource DangerBrush}"/></Trigger>
+      <Trigger Property="Tag" Value="Running"><Setter Property="Foreground" Value="{StaticResource RunningInkBrush}"/></Trigger>
+      <Trigger Property="Tag" Value="Risky"><Setter Property="Foreground" Value="{StaticResource GoldGlowBrush}"/></Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <!-- Hardware chip under the emblem: a label and one value. -->
+  <Style x:Key="ChipStyle" TargetType="Border">
+    <Setter Property="Height" Value="56"/>
+    <Setter Property="MinWidth" Value="132"/>
+    <Setter Property="CornerRadius" Value="16"/>
+    <Setter Property="Padding" Value="16,0"/>
+    <Setter Property="Margin" Value="0,0,10,0"/>
+    <Setter Property="Background" Value="{StaticResource Tint4Brush}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource GlassEdgeBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="views:Lift.IsEnabled" Value="True"/>
+    <Setter Property="views:Lift.Height" Value="3"/>
+  </Style>
+  <Style x:Key="ChipLabelStyle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="11.5"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="{StaticResource Ink45Brush}"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Margin" Value="0,0,10,0"/>
+  </Style>
+  <Style x:Key="ChipValueStyle" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="Segoe UI Variable Display"/>
+    <Setter Property="FontSize" Value="19"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+  <Style x:Key="ChipSmallValueStyle" TargetType="TextBlock" BasedOn="{StaticResource ChipValueStyle}">
+    <Setter Property="FontSize" Value="12.5"/>
+    <Setter Property="FontWeight" Value="Medium"/>
+    <Setter Property="FontFamily" Value="Segoe UI Variable Text"/>
+    <Setter Property="Foreground" Value="#D9FFFFFF"/>
+    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+  </Style>
+
+  <!-- A group in the Home strip: a dot in the group's state colour and its name. -->
+  <Style x:Key="StripChipStyle" TargetType="Border">
+    <Setter Property="Height" Value="40"/>
+    <Setter Property="CornerRadius" Value="20"/>
+    <Setter Property="Padding" Value="10,0,14,0"/>
+    <Setter Property="Margin" Value="0,0,8,0"/>
+    <Setter Property="Background" Value="{StaticResource Tint6Brush}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource GlassEdgeBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+  </Style>
+  <Style x:Key="StripDotStyle" TargetType="Ellipse">
+    <Setter Property="Width" Value="8"/><Setter Property="Height" Value="8"/>
+    <Setter Property="Margin" Value="0,0,8,0"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Fill" Value="{StaticResource PrimaryBrush}"/>
+    <Style.Triggers>
+      <Trigger Property="Tag" Value="Applied"><Setter Property="Fill" Value="{StaticResource StatusSuccessBrush}"/></Trigger>
+      <Trigger Property="Tag" Value="Failed"><Setter Property="Fill" Value="{StaticResource DangerBrush}"/></Trigger>
+      <Trigger Property="Tag" Value="Risky"><Setter Property="Fill" Value="{StaticResource GoldGlowBrush}"/></Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <!-- Chat bubbles in Ask 66. -->
+  <Style x:Key="AskBubbleStyle" TargetType="Border">
+    <Setter Property="MaxWidth" Value="360"/>
+    <Setter Property="Padding" Value="13,10"/>
+    <Setter Property="Margin" Value="0,0,0,8"/>
+    <Setter Property="CornerRadius" Value="16,16,16,5"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="Background" Value="{StaticResource Tint6Brush}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource GlassEdgeBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Style.Triggers>
+      <Trigger Property="Tag" Value="You">
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="CornerRadius" Value="16,16,5,16"/>
+        <Setter Property="Background" Value="{StaticResource AccentGradientBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="SuggestionChipStyle" TargetType="Button" BasedOn="{StaticResource GhostPillStyle}">
+    <Setter Property="Height" Value="30"/>
+    <Setter Property="Padding" Value="12,0"/>
+    <Setter Property="FontSize" Value="12.5"/>
+    <Setter Property="FontWeight" Value="Normal"/>
+    <Setter Property="Foreground" Value="#BFFFFFFF"/>
+    <Setter Property="Background" Value="{StaticResource Tint6Brush}"/>
+    <Setter Property="Margin" Value="0,0,6,6"/>
+  </Style>
+  <Style x:Key="AskInputStyle" TargetType="TextBox" BasedOn="{StaticResource DarkTextBoxStyle}">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="FontSize" Value="13.5"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Padding" Value="12,0"/>
+  </Style>
+
+  <!-- Game card on the Games page. The brand wash comes from the card's own backdrop brush. -->
+  <Style x:Key="GameCardItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource FocusVisual}">
+    <Setter Property="Margin" Value="0,0,14,0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="views:Lift.IsEnabled" Value="True"/>
+    <Setter Property="views:Lift.Height" Value="6"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <Border x:Name="Frame" Height="256" MaxWidth="240" CornerRadius="24" BorderThickness="1" BorderBrush="{StaticResource GlassBorderBrush}"
+                  Background="{Binding BackdropKey, Converter={StaticResource ResourceKeyConverter}}" ClipToBounds="True">
+            <Grid>
+              <Border x:Name="Spot" CornerRadius="24" views:Spotlight.IsEnabled="True"/>
+              <ContentPresenter/>
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Frame" Property="BorderBrush" Value="#CCE6B94A"/>
+              <Setter TargetName="Frame" Property="Effect">
+                <Setter.Value><DropShadowEffect Color="#E6B94A" BlurRadius="34" ShadowDepth="10" Direction="270" Opacity="0.35"/></Setter.Value>
+              </Setter>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource FocusBrush}"/><Setter TargetName="Frame" Property="BorderThickness" Value="2"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The measured line in a preview list. Softer than the old bordered row. -->
+  <Style x:Key="QuietLineStyle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="12.5"/>
+    <Setter Property="Foreground" Value="#D9FFFFFF"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="Margin" Value="0,0,0,4"/>
+  </Style>
+
+  <!-- Simple bar used for FRAMES and IMAGE on the Games page. -->
+  <Style x:Key="TradeBarStyle" TargetType="ProgressBar" BasedOn="{StaticResource LiveMeterStyle}">
+    <Setter Property="Height" Value="6"/>
+    <Setter Property="Background" Value="{StaticResource Tint12Brush}"/>
+    <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+  </Style>
+</ResourceDictionary>

@@ -234,7 +234,7 @@ public partial class App : Application
                 ? $"{Environment.NewLine}A system restore point was created first."
                 : $"{Environment.NewLine}NOTE: Windows refused a restore point (System Protection is off, or one was already taken today). Undo still works from the exact snapshots.";
         var detail = bundleResult is null ? string.Empty :
-            $"{Environment.NewLine}{Environment.NewLine}Legacy effects: {bundleResult.LastSummary.Executed} executed, {bundleResult.LastSummary.Skipped} incompatible/skipped, {bundleResult.LastSummary.Failed} failed, {bundleResult.LastSummary.Selected} selected. Resolution effects excluded: {bundleResult.ExcludedResolutionEffects}.{restorePoint}";
+            $"{Environment.NewLine}{Environment.NewLine}Changes: {bundleResult.LastSummary.Executed} executed, {bundleResult.LastSummary.Skipped} incompatible/skipped, {bundleResult.LastSummary.Failed} failed, {bundleResult.LastSummary.Selected} selected. Resolution effects excluded: {bundleResult.ExcludedResolutionEffects}.{restorePoint}";
         WorkerDialog.Show($"Scoped transaction completed: {mutations} bundle(s) applied and verified; {observations} read-only verification(s) succeeded.{detail}",
             "66mods Transaction Worker", MessageBoxButton.OK, MessageBoxImage.Information);
         return new(true, transaction.Id, "Every requested operation completed with the required verified success status.");

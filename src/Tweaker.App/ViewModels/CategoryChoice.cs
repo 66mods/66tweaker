@@ -40,6 +40,8 @@ public sealed class CategoryChoice : ObservableObject
             if (!Set(ref state, value)) return;
             RaisePropertyChanged(nameof(StateName));
             RaisePropertyChanged(nameof(ActionLabel));
+            RaisePropertyChanged(nameof(PillText));
+            RaisePropertyChanged(nameof(PillKind));
         }
     }
 
@@ -82,6 +84,40 @@ public sealed class CategoryChoice : ObservableObject
     /// <summary>String form so the card template can style by risk without knowing the enum.</summary>
     public string RiskName => Category.Risk.ToString();
     public bool IsExperimental => Category.Risk == RiskLevel.Experimental;
+    public int PermanentCount => Operation.IrreversibleEffectCount;
+
+    /// <summary>
+    /// The one line under the card's name: the count and the single fact that matters when deciding.
+    /// "48 · instant, fully reversible", "207 · restart", "372 · 19 permanent".
+    /// </summary>
+    public string Meta => PermanentCount > 0
+        ? $"{EffectCount} · {PermanentCount} {(IsExperimental ? "cannot be undone" : "permanent")}"
+        : RequiresRestart ? $"{EffectCount} · restart" : $"{EffectCount} · instant, fully reversible";
+
+    /// <summary>
+    /// One to five, from how much of the machine the group touches. Risky groups always read full: the
+    /// meter is a warning as much as a promise.
+    /// </summary>
+    public int ImpactSegments => IsExperimental ? 5 : EffectCount switch
+    {
+        >= 300 => 5,
+        >= 200 => 4,
+        >= 100 => 3,
+        >= 20 => 2,
+        _ => 1
+    };
+
+    /// <summary>Text for the state pill. Risk shows only while there is no run state to report.</summary>
+    public string PillText => State switch
+    {
+        CategoryRunState.Running => "Running",
+        CategoryRunState.Applied => "Applied",
+        CategoryRunState.Failed => "Failed",
+        _ => IsExperimental ? "Risky" : "Ready"
+    };
+
+    /// <summary>Ready, Running, Applied, Failed or Risky — the style keys the pill colours on.</summary>
+    public string PillKind => State == CategoryRunState.Ready && IsExperimental ? "Risky" : StateName;
 
     public bool IsSelected
     {

@@ -54,7 +54,7 @@ public sealed class WpfRuntime : IDisposable
         if (application.TryFindResource("StatusSuccessBrush") is not null) return;
         var assemblyName = Uri.EscapeDataString(typeof(MainWindow).Assembly.GetName().Name!);
         foreach (var file in new[] { "Theme.Tokens.xaml", "Theme.Icons.xaml", "Theme.Controls.xaml",
-                     "Theme.Support.xaml", "Theme.Home.xaml", "Theme.Home.Components.xaml", "Theme.Progress.xaml" })
+                     "Theme.Support.xaml", "Theme.Home.xaml", "Theme.Home.Components.xaml", "Theme.Progress.xaml", "Theme.Shell.xaml" })
             application.Resources.MergedDictionaries.Add((ResourceDictionary)Application.LoadComponent(
                 new Uri($"/{assemblyName};component/Resources/{file}", UriKind.Relative)));
         foreach (var dictionary in application.Resources.MergedDictionaries)

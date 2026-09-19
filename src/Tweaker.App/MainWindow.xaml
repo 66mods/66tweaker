@@ -6,103 +6,101 @@
         Title="66mods Tweaker"
         Width="1360" Height="860" MinWidth="1000" MinHeight="620"
         WindowStyle="None" ResizeMode="CanResize" WindowStartupLocation="CenterScreen"
-        Background="{StaticResource WindowBrush}"
+        AllowsTransparency="True" Background="Transparent"
         TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType">
   <shell:WindowChrome.WindowChrome>
-    <shell:WindowChrome CaptionHeight="44" ResizeBorderThickness="7" CornerRadius="10" GlassFrameThickness="0"/>
+    <shell:WindowChrome CaptionHeight="64" ResizeBorderThickness="7" CornerRadius="10" GlassFrameThickness="0"/>
   </shell:WindowChrome.WindowChrome>
 
-  <Grid Background="{StaticResource WindowBrush}">
-    <Grid.RowDefinitions><RowDefinition Height="44"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-    <Grid.ColumnDefinitions><ColumnDefinition Width="214"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+  <!--
+    One surface. The light behind everything is the aurora backdrop; pages are glass laid over it, and
+    the top bar carries the brand, three pills and the window buttons. The secondary pages — Restore,
+    History, Repair, About, Settings — live behind the "more" button rather than in a sidebar.
+  -->
+  <!-- The window is a rounded sheet: transparent outside the radius, clipped inside it (see MainWindow.xaml.cs). -->
+  <Border x:Name="Sheet" Background="{StaticResource WindowBrush}" BorderBrush="#26FFFFFF" BorderThickness="1" CornerRadius="16" SnapsToDevicePixels="True">
+  <Grid x:Name="Root" views:Entrance.ReduceMotion="{Binding ReduceMotion}">
+    <views:AuroraBackdrop x:Name="Backdrop" ReduceMotion="{Binding ReduceMotion}"/>
 
-    <Border Grid.RowSpan="2" Grid.Column="0" Background="{StaticResource SidebarBrush}" BorderBrush="#20232B" BorderThickness="0,0,1,0">
-      <Grid Margin="18,20,18,16">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <!-- Navigation scrolls: on a short window the advanced tools used to be cut off entirely,
-               leaving the advanced tools unreachable. -->
-          <RowDefinition Height="*"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Grid>
+      <Grid.RowDefinitions><RowDefinition Height="64"/><RowDefinition Height="*"/></Grid.RowDefinitions>
 
-        <StackPanel HorizontalAlignment="Center" Margin="0,0,0,14">
-          <Border Width="150" Height="88" ClipToBounds="True">
-            <Image Source="Assets/66mods-logo.png" Width="188" Height="188" Stretch="Fill" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-          </Border>
-          <!--
-            Lockup rather than a label: one weight, wide tracking, and a hairline under it. This appears in
-            every screenshot anyone posts, so it is worth being deliberate about.
-          -->
-          <StackPanel HorizontalAlignment="Center" Margin="0,4,0,0">
-            <TextBlock HorizontalAlignment="Center" FontSize="15" FontWeight="Bold"
-                       FontFamily="Segoe UI Variable Display" Foreground="{StaticResource TextBrush}">
-              <Run Text="6 6"/><Run Text="  M O D S" Foreground="{StaticResource PrimaryHoverBrush}"/>
-            </TextBlock>
-            <Border Height="1" Width="86" Margin="0,7,0,0" HorizontalAlignment="Center"
-                    Background="{StaticResource AccentSweepBrush}" Opacity="0.55"/>
-            <TextBlock Text="TWEAKER" HorizontalAlignment="Center" Margin="0,6,0,0" FontSize="9.5"
-                       FontWeight="SemiBold" Foreground="{StaticResource SubtleTextBrush}"/>
+      <Grid Grid.Row="0" Margin="24,0,10,0">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+          <Image Source="Assets/66mods-logo.png" Width="34" Height="34" RenderOptions.BitmapScalingMode="NearestNeighbor" VerticalAlignment="Center"/>
+          <!-- Lockup: one weight, wide tracking, MODS in gold. This is in every screenshot anyone posts. -->
+          <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontSize="13" FontWeight="Bold" FontFamily="Segoe UI Variable Display">
+            <Run Text="6 6"/><Run Text="  M O D S" Foreground="{StaticResource GoldGlowBrush}"/>
+          </TextBlock>
+        </StackPanel>
+
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="19" Padding="3"
+                Background="{StaticResource Tint6Brush}" BorderBrush="{StaticResource GlassEdgeBrush}" BorderThickness="1"
+                shell:WindowChrome.IsHitTestVisibleInChrome="True">
+          <StackPanel Orientation="Horizontal">
+            <ToggleButton x:Name="HomeNavigation" Tag="0" Content="Home" Style="{StaticResource NavPillStyle}" Click="Navigate_OnClick"/>
+            <ToggleButton Tag="1" Content="Optimize" Style="{StaticResource NavPillStyle}" Click="Navigate_OnClick"/>
+            <ToggleButton Tag="2" Content="Games" Style="{StaticResource NavPillStyle}" Click="Navigate_OnClick"/>
+            <Button x:Name="MoreButton" Style="{StaticResource GlyphButtonStyle}" Click="More_OnClick" ToolTip="More pages" Margin="2,0,0,0">
+              <TextBlock Text="•••" FontSize="11" FontWeight="Bold" Margin="0,-1,0,0"/>
+              <Button.ContextMenu>
+                <ContextMenu Style="{StaticResource ShellMenuStyle}" Placement="Bottom">
+                  <MenuItem Header="Restore" Tag="5" Style="{StaticResource ShellMenuItemStyle}" Click="Navigate_OnClick"/>
+                  <MenuItem Header="History" Tag="6" Style="{StaticResource ShellMenuItemStyle}" Click="Navigate_OnClick"/>
+                  <MenuItem Header="Repair Center" Tag="4" Style="{StaticResource ShellMenuItemStyle}" Click="Navigate_OnClick"/>
+                  <MenuItem Header="About the tweaks" Tag="3" Style="{StaticResource ShellMenuItemStyle}" Click="Navigate_OnClick"/>
+                  <MenuItem Header="Settings" Tag="7" Style="{StaticResource ShellMenuItemStyle}" Click="Navigate_OnClick"/>
+                  <Separator Style="{StaticResource ShellMenuSeparatorStyle}"/>
+                  <MenuItem Header="Rescan this PC" Command="{Binding RescanCommand}" Style="{StaticResource ShellMenuItemStyle}"
+                            ToolTip="Looks again for supported games and hardware; use it after installing a game"/>
+                  <Separator Style="{StaticResource ShellMenuSeparatorStyle}"/>
+                  <MenuItem Header="Join our Discord" Tag="https://discord.com/invite/66mods" Style="{StaticResource ShellMenuItemStyle}" Click="OfficialLink_OnClick"/>
+                  <MenuItem Header="YouTube / @66mods" Tag="https://www.youtube.com/@66mods" Style="{StaticResource ShellMenuItemStyle}" Click="OfficialLink_OnClick"/>
+                  <Separator Style="{StaticResource ShellMenuSeparatorStyle}"/>
+                  <MenuItem Header="{Binding AppVersion}" Style="{StaticResource ShellMenuItemStyle}" IsEnabled="False"/>
+                </ContextMenu>
+              </Button.ContextMenu>
+            </Button>
           </StackPanel>
-        </StackPanel>
+        </Border>
 
-        <ScrollViewer Grid.Row="1" Style="{StaticResource DarkScrollViewerStyle}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel>
-          <ToggleButton x:Name="HomeNavigation" Tag="0" Style="{StaticResource NavigationButtonStyle}" Click="Navigate_OnClick">
-            <StackPanel Orientation="Horizontal"><Path Data="{StaticResource Icon.HomeOutline}" Style="{StaticResource NavigationIconPathStyle}"/><TextBlock Text="Home" Style="{StaticResource NavigationTextStyle}"/></StackPanel>
-          </ToggleButton>
-          <ToggleButton Tag="1" Style="{StaticResource NavigationButtonStyle}" Click="Navigate_OnClick">
-            <StackPanel Orientation="Horizontal"><Path Data="{StaticResource Icon.OptimizeOutline}" Style="{StaticResource NavigationIconPathStyle}"/><TextBlock Text="Optimize" Style="{StaticResource NavigationTextStyle}"/></StackPanel>
-          </ToggleButton>
-          <ToggleButton Tag="2" Style="{StaticResource NavigationButtonStyle}" Click="Navigate_OnClick">
-            <StackPanel Orientation="Horizontal"><Path Data="{StaticResource Icon.GameOutline}" Style="{StaticResource NavigationIconPathStyle}"/><TextBlock Text="Games" Style="{StaticResource NavigationTextStyle}"/></StackPanel>
-          </ToggleButton>
-          <ToggleButton Tag="5" Style="{StaticResource NavigationButtonStyle}" Click="Navigate_OnClick">
-            <StackPanel Orientation="Horizontal"><Path Data="{StaticResource Icon.RestoreOutline}" Style="{StaticResource NavigationIconPathStyle}"/><TextBlock Text="Restore" Style="{StaticResource NavigationTextStyle}"/></StackPanel>
-          </ToggleButton>
-          <ToggleButton Tag="7" Style="{StaticResource NavigationButtonStyle}" Click="Navigate_OnClick">
-            <StackPanel Orientation="Horizontal"><Path Data="{StaticResource Icon.SettingsOutline}" Style="{StaticResource NavigationIconPathStyle}"/><TextBlock Text="Settings" Style="{StaticResource NavigationTextStyle}"/></StackPanel>
-          </ToggleButton>
-          <TextBlock Text="ADVANCED TOOLS" Style="{StaticResource DataLabelStyle}" Margin="12,16,0,5"/>
-          <ToggleButton Tag="3" Style="{StaticResource AdvancedNavigationButtonStyle}" Click="Navigate_OnClick"><TextBlock Text="About the tweaks" Style="{StaticResource AdvancedNavigationTextStyle}"/></ToggleButton>
-          <ToggleButton Tag="4" Style="{StaticResource AdvancedNavigationButtonStyle}" Click="Navigate_OnClick"><TextBlock Text="Repair Center" Style="{StaticResource AdvancedNavigationTextStyle}"/></ToggleButton>
-          <ToggleButton Tag="6" Style="{StaticResource AdvancedNavigationButtonStyle}" Click="Navigate_OnClick"><TextBlock Text="History" Style="{StaticResource AdvancedNavigationTextStyle}"/></ToggleButton>
-        </StackPanel>
-        </ScrollViewer>
-
-        <StackPanel Grid.Row="2">
-          <TextBlock Text="{Binding AppVersion}" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12" Margin="10,0,0,10"/>
-          <Button Tag="https://discord.com/invite/66mods" Click="OfficialLink_OnClick" Style="{StaticResource SidebarLinkButtonStyle}">
-            <StackPanel Orientation="Horizontal"><Path Data="{StaticResource Icon.Discord}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/><TextBlock Text="Join our Discord" Margin="9,0,0,0"/><Path Data="{StaticResource Icon.ExternalLink}" Width="11" Height="11" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="8,0,0,0"/></StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+          <!-- Ask 66 lives in the bar, so it never sits over a page's content. -->
+          <Button x:Name="AskButton" Style="{StaticResource GhostPillStyle}" Height="34" Padding="12,0,14,0" Margin="0,0,18,0"
+                  shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                  Command="{Binding Ask.ToggleCommand}" ToolTip="Ask about this PC and the tweaks">
+            <StackPanel Orientation="Horizontal">
+              <Ellipse Width="7" Height="7" Fill="{StaticResource GoldGlowBrush}" VerticalAlignment="Center">
+                <Ellipse.Effect><DropShadowEffect Color="#E6B94A" BlurRadius="10" ShadowDepth="0" Opacity="0.9"/></Ellipse.Effect>
+              </Ellipse>
+              <TextBlock Text="Ask 66" Margin="9,0,0,0" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
           </Button>
-          <Button Tag="https://www.youtube.com/@66mods" Click="OfficialLink_OnClick" Style="{StaticResource SidebarLinkButtonStyle}" Margin="0,2,0,0" Content="YouTube / @66mods"/>
-        </StackPanel>
-      </Grid>
-    </Border>
-
-    <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource WindowBrush}" BorderBrush="#20232B" BorderThickness="0,0,0,1">
-      <Grid>
-        <TextBlock Text="66mods Tweaker" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="12" Foreground="{StaticResource SubtleTextBrush}"/>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
           <Button Style="{StaticResource WindowButtonStyle}" Click="Minimize_OnClick" shell:WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Minimize"><Path Data="{StaticResource Icon.Minimize}" Width="12" Height="12" Stretch="Uniform" Fill="{StaticResource TextBrush}"/></Button>
           <Button Style="{StaticResource WindowButtonStyle}" Click="Maximize_OnClick" shell:WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Maximize or restore"><Path Data="{StaticResource Icon.Maximize}" Width="12" Height="12" Stretch="Uniform" Fill="{StaticResource TextBrush}"/></Button>
           <Button Style="{StaticResource CloseWindowButtonStyle}" Click="Close_OnClick" shell:WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Close"><Path Data="{StaticResource Icon.Close}" Width="12" Height="12" Stretch="Uniform" Fill="{StaticResource TextBrush}"/></Button>
         </StackPanel>
       </Grid>
-    </Border>
 
-    <TabControl x:Name="MainTabs" Grid.Row="1" Grid.Column="1"
-                SelectedIndex="{Binding SelectedPageIndex, Mode=TwoWay}"
-                SelectionChanged="Tabs_OnSelectionChanged"
-                Style="{StaticResource ContentTabControlStyle}">
-      <TabItem><views:HomeView/></TabItem>
-      <TabItem><views:OptimizationView/></TabItem>
-      <TabItem><views:GamesView/></TabItem>
-      <TabItem><views:AboutView/></TabItem>
-      <TabItem><views:RepairView/></TabItem>
-      <TabItem><views:RestoreView/></TabItem>
-      <TabItem><views:HistoryView/></TabItem>
-      <TabItem><views:SettingsView/></TabItem>
-    </TabControl>
+      <TabControl x:Name="MainTabs" Grid.Row="1"
+                  SelectedIndex="{Binding SelectedPageIndex, Mode=TwoWay}"
+                  SelectionChanged="Tabs_OnSelectionChanged"
+                  Style="{StaticResource ContentTabControlStyle}" Background="Transparent">
+        <TabItem><views:HomeView/></TabItem>
+        <TabItem><views:OptimizationView/></TabItem>
+        <TabItem><views:GamesView/></TabItem>
+        <TabItem><views:AboutView/></TabItem>
+        <TabItem><views:RepairView/></TabItem>
+        <TabItem><views:RestoreView/></TabItem>
+        <TabItem><views:HistoryView/></TabItem>
+        <TabItem><views:SettingsView/></TabItem>
+      </TabControl>
+    </Grid>
+
+    <!-- The Ask 66 drawer slides in under the bar, on the right. -->
+    <views:AskPanel x:Name="AskDrawer" DataContext="{Binding Ask}" Width="440"
+                    HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="0,70,16,16"
+                    Visibility="Collapsed" Opacity="0"/>
   </Grid>
+  </Border>
 </Window>

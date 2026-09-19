@@ -21,6 +21,16 @@ internal sealed record NvidiaSettingIntent(string SettingName, uint Value, strin
 /// </remarks>
 internal static class NvidiaGameProfileCatalog
 {
+    /// <summary>
+    /// The ladder for any supported game. Every row is an NVIDIA driver setting rather than anything
+    /// Roblox-specific, and the trade each profile names — frames over filtering, then frames over
+    /// everything — is the same trade in Fortnite, Valorant, GTA V and Minecraft. So the four newer games
+    /// get the rows Roblox has, value for value; Roblox's comments below explain what each block is for.
+    /// The Roblox set is pinned by test and this method must never make it differ.
+    /// </summary>
+    internal static IReadOnlyList<NvidiaSettingIntent> ForGame(GameDriverTarget target, GamePerformanceProfile profile) =>
+        ForRoblox(profile);
+
     internal static IReadOnlyList<NvidiaSettingIntent> ForRoblox(GamePerformanceProfile profile) => profile switch
     {
         GamePerformanceProfile.UltraPotato => Layer(UltraPotato()),
@@ -35,17 +45,8 @@ internal static class NvidiaGameProfileCatalog
     /// declare what makes it different. Writing the baseline first also keeps "Negative LOD bias: Allow"
     /// ahead of any LOD bias a profile adds, which is the order the driver needs.
     /// </summary>
-    private static NvidiaSettingIntent[] Layer(IReadOnlyList<NvidiaSettingIntent> profile)
-    {
-        var merged = BalancedFps().ToList();
-        foreach (var intent in profile)
-        {
-            var index = merged.FindIndex(x => x.SettingName == intent.SettingName);
-            if (index >= 0) merged[index] = intent;
-            else merged.Add(intent);
-        }
-        return [.. merged];
-    }
+    private static NvidiaSettingIntent[] Layer(IReadOnlyList<NvidiaSettingIntent> profile) =>
+        ProfileLadder.Layer(BalancedFps(), profile, x => x.SettingName);
 
     /// <summary>
     /// Exactly the rows the owner has set in their own NVIDIA control panel, value-for-value out of their

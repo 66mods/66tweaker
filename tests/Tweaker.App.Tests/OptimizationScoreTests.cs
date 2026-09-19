@@ -28,7 +28,11 @@ public sealed class OptimizationScoreTests
 
         await vm.LoadAsync(CancellationToken.None);
 
-        vm.Items.Should().OnlyContain(x => !x.IsSelected, "nothing is selected; each card runs itself");
+        // The recommended groups start ticked so the Optimize button has something to run; the risky one
+        // does not. The headline counts still describe every group, ticked or not.
+        vm.Categories.Where(x => !x.IsExperimental).Should().OnlyContain(x => x.IsSelected);
+        vm.Categories.Where(x => x.IsExperimental).Should().OnlyContain(x => !x.IsSelected);
+        vm.SelectedChangeCount.Should().BeLessThan(vm.SelectedEffectCount, "the risky group is not ticked");
         vm.SelectedEffectCount.Should().BeGreaterThan(1000, "the counts cover every group the page offers");
         // Word boundary: the count itself can end in a zero. "1110 effects" contained "0 effects"
         // and failed a check that was only ever meant to catch an empty page.

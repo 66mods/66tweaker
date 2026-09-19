@@ -74,7 +74,12 @@ public sealed class PresentationStateTests
 
         var canApplySelectedGame = typeof(GameProfilesViewModel).GetProperty("CanApplySelectedGame");
         canApplySelectedGame.Should().NotBeNull();
-        ((bool)canApplySelectedGame!.GetValue(vm)!).Should().BeFalse();
+        // The page opens on a game that is installed here, so Apply starts enabled; a game that is not
+        // installed disables it.
+        vm.SelectedGame.Should().Be("Valorant");
+        ((bool)canApplySelectedGame!.GetValue(vm)!).Should().BeTrue();
+        vm.SelectedGame = "Fortnite";
+        ((bool)canApplySelectedGame.GetValue(vm)!).Should().BeFalse();
 
         vm.SelectedGame = "Valorant";
 

@@ -106,6 +106,7 @@ public sealed class HomeViewModel : ObservableObject
 
     public void LoadSnapshot(Tweaker.Domain.Models.SystemSnapshot result)
     {
+        LoadChips(result);
         SystemSummary = HardwareHeadline = FormatHardwareHeadline(result);
         InstalledGames = result.Games.Count(x => x.Value.Installed);
         ScanState = "System ready";
@@ -121,6 +122,7 @@ public sealed class HomeViewModel : ObservableObject
         try
         {
             var result = await scanner.ScanAsync(cancellationToken);
+            LoadChips(result);
             SystemSummary = HardwareHeadline = FormatHardwareHeadline(result);
             InstalledGames = result.Games.Count(x => x.Value.Installed);
             ScanState = "System ready";
@@ -138,5 +140,37 @@ public sealed class HomeViewModel : ObservableObject
     {
         var gpu = result.Gpus.FirstOrDefault()?.Name ?? "GPU not identified";
         return $"{result.Cpu.Name} · {gpu} · {result.Memory.TotalBytes / 1024 / 1024 / 1024} GB RAM";
+    }
+
+    /// <summary>
+    /// The chips under the emblem. Marketing prefixes are dropped so "RTX 3060 Ti" fits where
+    /// "NVIDIA GeForce RTX 3060 Ti" would be trimmed to an ellipsis.
+    /// </summary>
+    public string GpuChip { get => gpuChip; private set => Set(ref gpuChip, value); }
+    public string CpuChip { get => cpuChip; private set => Set(ref cpuChip, value); }
+    public string WindowsChip { get => windowsChip; private set => Set(ref windowsChip, value); }
+    private string gpuChip = "—";
+    private string cpuChip = "—";
+    private string windowsChip = "—";
+
+    private void LoadChips(Tweaker.Domain.Models.SystemSnapshot result)
+    {
+        GpuChip = ShortHardwareName(result.Gpus.FirstOrDefault()?.Name ?? "GPU");
+        CpuChip = ShortHardwareName(result.Cpu.Name);
+        WindowsChip = result.Windows.Name.Contains("11") ? "Win 11" : result.Windows.Name.Contains("10") ? "Win 10" : result.Windows.Name;
+    }
+
+    internal static string ShortHardwareName(string name)
+    {
+        foreach (var prefix in new[] { "NVIDIA GeForce ", "NVIDIA ", "AMD Radeon ", "AMD ", "Intel(R) ", "Intel ", "Radeon " })
+            if (name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) { name = name[prefix.Length..]; break; }
+        name = name.Replace("(R)", "").Replace("(TM)", "").Replace("Graphics", "").Trim();
+        foreach (var marker in new[] { " CPU @", " Processor", " with Radeon", " @ " })
+        {
+            var index = name.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+            if (index > 0) name = name[..index];
+        }
+        while (name.Contains("  ")) name = name.Replace("  ", " ");
+        return name.Trim();
     }
 }

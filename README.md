@@ -6,6 +6,13 @@ Most tweakers are a button and a promise. This one records the original value of
 touching it, checks afterwards that the change actually landed, prints every command as it goes, and keeps a
 transaction journal so a run can be undone. No telemetry, no updater, no ads, no network calls.
 
+> **2.0.** New interface, and Ultra Potato for every graphics vendor: game profiles now write the driver
+> half through NVAPI on NVIDIA, ADLX on AMD and the Intel Graphics Control Library on Intel, for all five
+> games. The AMD and Intel paths are built against the vendors' documented interfaces and tested against
+> fakes; they have **not yet been run on real AMD or Intel hardware** — see
+> [Vendor driver layer](#vendor-driver-layer). Ask 66, the new help panel, answers from this PC's own
+> data and never goes online — see [Ask 66](#ask-66).
+>
 > **1.1.** Every optimization group has been run on real hardware. It still changes your system in ways
 > some of which need a restart and one of which cannot be undone — read
 > [Before you run it](#before-you-run-it) before your first run.
@@ -33,7 +40,8 @@ it, so you can verify that the thousand-odd commands in the app are exactly the 
 ## What it does
 
 Optimization is split into groups taken from the original script's own menu. Each has its own **Run** button
-and is its own transaction, so a failure in one leaves the others applied.
+and runs as its own transaction; the **Optimize** button runs every ticked group as one transaction, so one
+press means one administrator prompt and one journal entry to undo.
 
 | Group | Changes | Notes |
 | --- | --- | --- |
@@ -45,9 +53,40 @@ and is its own transaction, so a failure in one leaves the others applied.
 | Memory | 5 | Paging and cache policy for the installed RAM |
 | Debloat & Services | 108 | Bundled apps and services. **Uninstalls cannot be undone** |
 
-Also included: per-game profiles (Fortnite, Valorant, GTA V, Minecraft, Roblox) with NVIDIA driver-level
-settings applied through NVAPI, a Repair Center limited to a fixed list of fixes, transaction history, and
+Also included: per-game profiles (Fortnite, Valorant, GTA V, Minecraft, Roblox) with driver-level settings
+for NVIDIA, AMD and Intel, a Repair Center limited to a fixed list of fixes, transaction history, and
 recovery for interrupted runs.
+
+## Vendor driver layer
+
+A game profile writes two layers in one transaction: the game's own settings file, and the graphics
+driver's profile for that game's executable. Balanced, Competitive, Mega FPS and Ultra Potato each add to
+the step before, on every vendor.
+
+| Vendor | Interface | Scope | Verified on hardware |
+| --- | --- | --- | --- |
+| NVIDIA | NVAPI driver settings | Per game (the game's executable) | Yes, since 1.0 |
+| AMD | ADLX (`amdadlx64.dll`, Adrenalin 2022 or newer) | **Whole GPU** — ADLX has no per-game scope, so the profile reaches every game until Undo or Reset | **Not yet** |
+| Intel | Intel Graphics Control Library (`ControlLib.dll`) | Per game (the game's executable) | **Not yet** |
+
+The Games page says which vendor it found and, on AMD, that the profile applies to every game. Before the
+first write on any vendor the original values are recorded to
+`%LocalAppData%\66mods Tweaker\<Vendor>\<game>-baseline.json`; **Reset driver profile** puts them back
+even after the app was restarted. A PC whose GPU has none of these interfaces still gets the game's own
+settings and is told so.
+
+The AMD and Intel code paths are covered by tests against fake drivers, with the interface layouts checked
+byte for byte. They have not been run against a real Radeon or Arc yet. If you have one, a report from the
+Games page — what it said, what changed in the vendor's own app, and `worker.log` — is the most useful
+thing you can send.
+
+## Ask 66
+
+A help panel shaped like a chat, behind the button in the top bar. Every answer is written into the app
+and filled in from what it has already read on this PC — the score, the groups and their states, the
+chosen game profile, the last run. Ask why a group needs a restart, whether Debloat is safe, what Ultra
+Potato writes for your game, why Windows shows a warning. It is a FAQ, not a model: nothing is sent
+anywhere and there is nothing to configure.
 
 ## How the safety works
 
@@ -94,16 +133,16 @@ preinstalled on Windows 10 — that is why the download is around 79 MB.
 | --- | --- |
 | `src/Tweaker.App` | WPF interface, elevation handoff, view models |
 | `src/Tweaker.Domain` | Transaction model, contracts, parity ledger |
-| `src/Tweaker.Infrastructure.Windows` | Registry, power, NVAPI, the effect bundle |
+| `src/Tweaker.Infrastructure.Windows` | Registry, power, NVAPI / ADLX / IGCL, the effect bundle |
 | `legacy/` | The original batch scripts and the bundle compiled from them |
-| `tools/Tweaker.LegacyImporter` | Turns those scripts into the frozen bundle |
+| `tools/Tweaker.LegacyImporter` | Turns those scripts into the locked bundle |
 | `tests/` | 500 tests, including real WPF rendering and pipe round-trips |
 | `docs/RELEASE-CHECKLIST.md` | What has been verified, and what has not |
 
 ## Where the tweaks come from
 
-The effects are imported from the original **66mods Tweaks** batch script, written by 66 and slavr for the
-GTA V community, and frozen into `legacy/legacy-bundle.json` under a SHA-256 lock. Every command in it is
+The effects come from the original **66mods Tweaks** script and are locked into `legacy/legacy-bundle.json`
+under a SHA-256 hash. Every command in it is
 accounted for: applied, replaced with a checked equivalent, or excluded with a recorded reason. Nothing is
 invented — see `docs/IMPLEMENTATION-AUDIT.md`.
 

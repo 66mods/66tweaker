@@ -91,10 +91,6 @@ public sealed class GameConfigOperation : ITweakOperation
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
 
-    private static string ProfileName(GamePerformanceProfile value) => value switch
-    {
-        GamePerformanceProfile.BalancedFps => "Balanced FPS", GamePerformanceProfile.Competitive => "Competitive",
-        GamePerformanceProfile.MegaFps => "Mega FPS", _ => "Ultra Potato"
-    };
+    private static string ProfileName(GamePerformanceProfile value) => GameProfilePolicy.DisplayName(value);
     private static ImpactLevel Impact(GamePerformanceProfile value) => value is GamePerformanceProfile.MegaFps or GamePerformanceProfile.UltraPotato ? ImpactLevel.High : ImpactLevel.Medium;
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
@@ -7,9 +7,9 @@
     <AssemblyName>66mods Tweaker</AssemblyName>
     <Product>66mods Tweaker</Product>
     <Authors>66mods</Authors>
-    <Version>1.1.0</Version>
-    <FileVersion>1.1.0.0</FileVersion>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0.0</FileVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
     <Description>Local reversible Windows performance control center by 66mods.</Description>
     <Copyright>66mods 2026</Copyright>
     <ApplicationIcon>Assets\66mods-logo.ico</ApplicationIcon>
@@ -34,5 +34,13 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\66mods-logo.png" />
+    <!-- The emblem clip: H.264 for Media Foundation (see MediaFoundationVideo), copied out to the local cache
+         folder on first run; and the same clip as palette frames (see EmblemFrames) for editions without codecs. -->
+    <Resource Include="Assets\emblem.mp4" />
+    <Resource Include="Assets\emblem.frames" />
+    <!-- Compiled pixel shader. The .hlsl beside it is the source; fxc from the Windows SDK rebuilds it. -->
+    <Resource Include="Effects\Aurora.ps" />
+    <None Remove="Effects\*.hlsl" />
+    <Content Include="Effects\*.hlsl" CopyToOutputDirectory="Never" Pack="false" />
   </ItemGroup>
 </Project>

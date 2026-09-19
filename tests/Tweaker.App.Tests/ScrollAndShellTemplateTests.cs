@@ -58,24 +58,21 @@ public sealed class ScrollAndShellTemplateTests
     }
 
     [Fact]
-    public void SidebarAndFooter_UseCustomNavigationAndOfficialLinkWiring()
+    public void PillsAndMoreMenu_ReachEveryPageAndWireTheOfficialLinks()
     {
         var shell = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Tweaker.App", "MainWindow.xaml"));
-        var primary = shell.Descendants().Where(x => x.Name.LocalName == "ToggleButton" && (string?)x.Attribute("Style") == "{StaticResource NavigationButtonStyle}").ToArray();
-        var advanced = shell.Descendants().Where(x => x.Name.LocalName == "ToggleButton" && (string?)x.Attribute("Style") == "{StaticResource AdvancedNavigationButtonStyle}").ToArray();
-        var footerLinks = shell.Descendants().Where(x => x.Name.LocalName == "Button" && (string?)x.Attribute("Style") == "{StaticResource SidebarLinkButtonStyle}").ToArray();
+        var pills = shell.Descendants().Where(x => x.Name.LocalName == "ToggleButton" && (string?)x.Attribute("Style") == "{StaticResource NavPillStyle}").ToArray();
+        var menu = shell.Descendants().Where(x => x.Name.LocalName == "MenuItem" && (string?)x.Attribute("Click") == "Navigate_OnClick").ToArray();
+        var links = shell.Descendants().Where(x => x.Name.LocalName == "MenuItem" && (string?)x.Attribute("Click") == "OfficialLink_OnClick").ToArray();
 
-        // Home, Optimize, Games, Restore, Settings — then About, Repair Center, History.
-        primary.Select(x => (string?)x.Attribute("Tag")).Should().Equal("0", "1", "2", "5", "7");
-        advanced.Select(x => (string?)x.Attribute("Tag")).Should().Equal("3", "4", "6");
-        footerLinks.Select(x => new
-        {
-            Tag = (string?)x.Attribute("Tag"),
-            Click = (string?)x.Attribute("Click")
-        }).Should().BeEquivalentTo([
-            new { Tag = "https://www.youtube.com/@66mods", Click = "OfficialLink_OnClick" },
-            new { Tag = "https://discord.com/invite/66mods", Click = "OfficialLink_OnClick" }
-        ]);
+        // Home, Optimize, Games are the pills; Restore, History, Repair Center, About and Settings sit
+        // behind the "more" button. Between them every one of the eight pages has to be reachable.
+        pills.Select(x => (string?)x.Attribute("Tag")).Should().Equal("0", "1", "2");
+        pills.Should().OnlyContain(x => (string?)x.Attribute("Click") == "Navigate_OnClick");
+        menu.Select(x => (string?)x.Attribute("Tag")).Should().BeEquivalentTo("3", "4", "5", "6", "7");
+        links.Select(x => (string?)x.Attribute("Tag")).Should().BeEquivalentTo(
+            "https://www.youtube.com/@66mods", "https://discord.com/invite/66mods");
+        shell.Descendants().Count(x => x.Name.LocalName == "TabItem").Should().Be(8);
     }
 
     private static void AssertTrack(XElement template, string orientation, string decreaseCommand, string increaseCommand, string dimensionName, string dimensionValue, string minimumName, string minimumValue)

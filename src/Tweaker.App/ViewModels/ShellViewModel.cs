@@ -10,7 +10,7 @@ using Tweaker.Domain.Gpu;
 using Tweaker.Domain.Models;
 using Tweaker.Domain.Services;
 using Tweaker.Infrastructure.Windows.Games;
-
+using Tweaker.Infrastructure.Windows.Gpu;
 using Tweaker.Infrastructure.Windows.Scanning;
 
 namespace Tweaker.App.ViewModels;
@@ -63,8 +63,24 @@ public sealed record GameCardViewModel(string Name, string Status, IReadOnlyList
         }
         : "SurfaceBrush";
 
-    public string StatusText => IsDetected ? "Detected" : "Not installed";
+    public string StatusText => IsDetected ? "detected" : "not installed";
     public string ProfileCountText => Profiles.Count == 1 ? "1 profile" : $"{Profiles.Count} profiles";
+
+    /// <summary>The big initial on the card. The artwork is the app's own type, so nothing is downloaded.</summary>
+    public string Glyph => Name.Length == 0 ? "?" : Name[..1];
+
+    /// <summary>A wash of the brand colour for the initial; muted while the game is absent.</summary>
+    public string GlyphBrushKey => IsDetected
+        ? Name switch
+        {
+            "Roblox" => "GameRobloxGlyphBrush",
+            "Valorant" => "GameValorantGlyphBrush",
+            "GTA V" => "GameGtaGlyphBrush",
+            "Minecraft" => "GameMinecraftGlyphBrush",
+            "Fortnite" => "GameFortniteGlyphBrush",
+            _ => "GlyphMutedBrush"
+        }
+        : "GlyphMutedBrush";
 }
 
 public sealed class ShellViewModel : ObservableObject
@@ -79,6 +95,10 @@ public sealed class ShellViewModel : ObservableObject
     private readonly ICompositeTransactionStore compositeTransactionStore;
     private bool isReady;
     private bool reduceMotion;
+    private OptimizationViewModel optimization = null!;
+    private GameProfilesViewModel gameProfiles = null!;
+    private RecoveryViewModel? recovery;
+    private RestoreViewModel? restore;
     private string initializationStatus = "Scanning this PC...";
     private int selectedPageIndex;
     private string legacySearchText = "";
@@ -88,9 +108,13 @@ public sealed class ShellViewModel : ObservableObject
         RepairViewModel? repair = null, IOptimizationElevationLauncher? optimizationElevationLauncher = null,
         IOptimizationConfirmation? optimizationConfirmation = null,
         ICompositeTransactionStore? compositeTransactionStore = null,
-        ILiveMetricsReader? liveMetrics = null, IMachineStateReader? machineState = null)
+        ILiveMetricsReader? liveMetrics = null, IMachineStateReader? machineState = null,
+        IReadOnlyList<IGpuDriverProfileProvider>? driverProviders = null)
     {
         machineStateReader = machineState;
+        this.driverProviders = driverProviders ?? GpuDriverProviders.Create();
+        Ask = new AskViewModel(BuildAskContext);
+        RescanCommand = new AsyncCommand(RescanAsync, error => InitializationStatus = $"Rescan failed: {error.Message}");
         this.scanner = scanner;
         this.operations = operations;
         this.coordinator = coordinator;
@@ -99,7 +123,9 @@ public sealed class ShellViewModel : ObservableObject
         this.optimizationElevationLauncher = optimizationElevationLauncher;
         this.optimizationConfirmation = optimizationConfirmation ?? new DenyingOptimizationConfirmation();
         this.compositeTransactionStore = compositeTransactionStore ?? new InMemoryCompositeTransactionStore();
-        reduceMotion = reduceMotionDefault ?? !SystemParameters.ClientAreaAnimation;
+        // Motion is on for everyone. The Windows animation preference used to be honoured here, which
+        // left the emblem and the backdrop frozen on most tweaked PCs; the Settings switch is the way off.
+        reduceMotion = reduceMotionDefault ?? false;
         Home = new HomeViewModel(scanner, liveMetrics, machineState);
         GameCards = new ObservableCollection<GameCardViewModel>(GameProfileCatalog.Create().Values.Select(x =>
             new GameCardViewModel(x.Game, "Scan required", x.Profiles.Select(ProfileName).ToArray())));
@@ -115,12 +141,37 @@ public sealed class ShellViewModel : ObservableObject
         "v" + (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0");
 
     public HomeViewModel Home { get; }
-    public OptimizationViewModel Optimization { get; private set; } = null!;
+    public AskViewModel Ask { get; }
+    private SystemSnapshot? snapshot;
+
+    /// <summary>The facts Ask 66 fills its answers from, gathered when a question is asked. They stay on this PC.</summary>
+    internal AskContext BuildAskContext()
+    {
+        var current = snapshot;
+        var optimization = Optimization;
+        var games = GameProfiles;
+        if (current is null || optimization is null || games is null) return AskContext.Empty;
+        var groups = optimization.Categories.Select(x => new AskGroupFact(x.Name, x.EffectCount, x.PermanentCount,
+            x.RequiresRestart, x.IsExperimental, x.PillText, x.IsSelected, x.Summary)).ToArray();
+        var issues = optimization.Progress.Lines.Where(x => x.KindName == "Fail").Select(x => x.Text).TakeLast(5).ToArray();
+        var lines = games.PreviewApplied.ToArray();
+        return new AskContext(current.Cpu.Name, current.Gpus.FirstOrDefault()?.Name ?? "GPU not identified",
+            current.Windows.Name, optimization.OptimizationScore, optimization.MeasuredCount, optimization.RemainingCount,
+            groups, current.Games.Values.Where(x => x.Installed).Select(x => x.Name).ToArray(),
+            games.SelectedGame, games.SelectedProfileName, lines, games.VendorNote, optimization.LastResult, issues);
+    }
+
+    // Rebuilt by every scan, so they raise: the pages are bound to whichever instance is current.
+    public OptimizationViewModel Optimization { get => optimization; private set => Set(ref optimization, value); }
     private readonly IMachineStateReader? machineStateReader;
-    public GameProfilesViewModel GameProfiles { get; private set; } = null!;
-    public RecoveryViewModel? Recovery { get; private set; }
+    private readonly IReadOnlyList<IGpuDriverProfileProvider> driverProviders;
+    public GameProfilesViewModel GameProfiles { get => gameProfiles; private set => Set(ref gameProfiles, value); }
+    public RecoveryViewModel? Recovery { get => recovery; private set => Set(ref recovery, value); }
     public HistoryViewModel? History { get; }
-    public RestoreViewModel? Restore { get; private set; }
+    public RestoreViewModel? Restore { get => restore; private set => Set(ref restore, value); }
+
+    /// <summary>"Rescan this PC" in the ··· menu: the way to pick up a game installed since launch.</summary>
+    public AsyncCommand RescanCommand { get; }
     public RepairViewModel? Repair { get; }
     public ObservableCollection<GameCardViewModel> GameCards { get; }
     public ObservableCollection<SystemProfile> SystemProfiles { get; }
@@ -147,15 +198,30 @@ public sealed class ShellViewModel : ObservableObject
     public IEnumerable<LegacyArea> FilteredLegacyAreas => LegacyAreas.Where(x => Matches(x.OriginalArea) || Matches(x.NewLocation));
     public IEnumerable<LegacyItem> FilteredBlockedLegacy => BlockedLegacy.Where(x => Matches(x.Name) || Matches(x.Reason));
 
+    /// <summary>
+    /// Scans again and rebuilds every page from the new snapshot. Refused while a run is in progress:
+    /// swapping the Optimize page out from under a transaction is not a thing to do.
+    /// </summary>
+    private async Task RescanAsync(CancellationToken cancellationToken)
+    {
+        if (!IsReady || Optimization.Progress.IsRunning || GameProfiles.Progress.IsRunning) return;
+        IsReady = false;
+        InitializationStatus = "Scanning this PC again...";
+        try { await InitializeAsync(cancellationToken); }
+        catch { IsReady = true; throw; }
+    }
+
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         var snapshot = await scanner.ScanAsync(cancellationToken);
+        this.snapshot = snapshot;
         Home.LoadSnapshot(snapshot);
         Optimization = new(operations, coordinator, snapshot, optimizationElevationLauncher,
             optimizationConfirmation, compositeTransactionStore, machineStateReader);
-        GameProfiles = new(snapshot, coordinator);
+        GameProfiles = new(snapshot, coordinator, driverProviders);
         await Optimization.LoadAsync(cancellationToken);
         var restoreOperations = operations.Concat(BuildGameRestoreOperations(snapshot))
+            .Concat(BuildDriverRestoreOperations(snapshot))
             .ToDictionary(x => x.Descriptor.Id, StringComparer.Ordinal);
         if (transactionStore is not null)
         {
@@ -201,13 +267,22 @@ public sealed class ShellViewModel : ObservableObject
             }
         return result;
     }
-    private static string ProfileName(GamePerformanceProfile profile) => profile switch
+    /// <summary>
+    /// The driver operations a journal from an earlier session may need to rewind. One per game, profile
+    /// and vendor present on this PC, so a rollback started from History can restore the driver half
+    /// of a game profile as well as the file half.
+    /// </summary>
+    private IReadOnlyList<ITweakOperation> BuildDriverRestoreOperations(SystemSnapshot snapshot)
     {
-        GamePerformanceProfile.BalancedFps => "Balanced FPS",
-        GamePerformanceProfile.Competitive => "Competitive",
-        GamePerformanceProfile.MegaFps => "Mega FPS",
-        _ => "Ultra Potato"
-    };
+        var result = new List<ITweakOperation>();
+        foreach (var provider in GpuDriverProviders.Available(driverProviders, snapshot))
+            foreach (var target in GameDriverTargets.All)
+                foreach (var profile in Enum.GetValues<GamePerformanceProfile>())
+                    result.Add(provider.CreateOperation(profile, target));
+        return result;
+    }
+
+    private static string ProfileName(GamePerformanceProfile profile) => GameProfilePolicy.DisplayName(profile);
     private bool Matches(string value) => string.IsNullOrWhiteSpace(LegacySearchText) ||
         value.Contains(LegacySearchText, StringComparison.OrdinalIgnoreCase);
 }

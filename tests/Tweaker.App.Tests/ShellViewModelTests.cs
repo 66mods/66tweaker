@@ -24,8 +24,35 @@ public sealed class ShellViewModelTests
     }
 
     [Fact]
-    public void ReduceMotion_DefaultsToOperatingSystemPreferenceButCanBeOverridden()
+    public async Task Rescan_FindsAGameInstalledSinceLaunchAndRebuildsThePages()
     {
+        var scanner = new Scanner();
+        var shell = new ShellViewModel(scanner, [new FakeOperation()], new TransactionCoordinator(new Store()));
+        await shell.InitializeAsync(CancellationToken.None);
+        var firstOptimization = shell.Optimization;
+        shell.GameCards.Single(x => x.Name == "Roblox").IsDetected.Should().BeFalse();
+        var raised = new List<string>();
+        shell.PropertyChanged += (_, e) => raised.Add(e.PropertyName ?? "");
+
+        scanner.Installed.Add("Roblox");
+        await shell.RescanCommand.ExecuteAsync();
+
+        scanner.Scans.Should().Be(2);
+        shell.IsReady.Should().BeTrue();
+        shell.InitializationStatus.Should().Be("Ready - 1 games detected");
+        shell.GameCards.Single(x => x.Name == "Roblox").IsDetected.Should().BeTrue();
+        shell.GameProfiles.SelectedGame.Should().Be("Roblox");
+        shell.Optimization.Should().NotBeSameAs(firstOptimization);
+        raised.Should().Contain(nameof(ShellViewModel.Optimization)).And.Contain(nameof(ShellViewModel.GameProfiles),
+            "the pages are bound to these; a silent swap would leave them on the old snapshot");
+    }
+
+    [Fact]
+    public void ReduceMotion_IsOffForEveryoneUnlessSwitchedOn()
+    {
+        // Not tied to the Windows animation preference: most tweaked PCs have it off, and the app
+        // then opened with a frozen emblem and backdrop. The Settings switch is the way to turn motion off.
+        new ShellViewModel(new Scanner(), [new FakeOperation()], new TransactionCoordinator(new Store())).ReduceMotion.Should().BeFalse();
         var shell = new ShellViewModel(new Scanner(), [new FakeOperation()], new TransactionCoordinator(new Store()), reduceMotionDefault: true);
         shell.ReduceMotion.Should().BeTrue();
         shell.ReduceMotion = false;
@@ -34,9 +61,15 @@ public sealed class ShellViewModelTests
 
     private sealed class Scanner : ISystemScanner
     {
-        public Task<SystemSnapshot> ScanAsync(CancellationToken token) => Task.FromResult(new SystemSnapshot(
-            new("Windows 11", "10", 26100), new("CPU", "AMD"), [new("GPU", "NVIDIA", "1")], new(16_000_000_000),
-            new(false, true, "Balanced"), new Dictionary<string, DetectedGame>(), []));
+        public List<string> Installed { get; } = [];
+        public int Scans { get; private set; }
+        public Task<SystemSnapshot> ScanAsync(CancellationToken token)
+        {
+            Scans++;
+            return Task.FromResult(new SystemSnapshot(
+                new("Windows 11", "10", 26100), new("CPU", "AMD"), [new("GPU", "NVIDIA", "1")], new(16_000_000_000),
+                new(false, true, "Balanced"), Installed.ToDictionary(x => x, x => new DetectedGame(x, true, null)), []));
+        }
     }
     private sealed class FakeOperation : ITweakOperation
     {

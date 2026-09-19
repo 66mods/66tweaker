@@ -15,4 +15,15 @@ internal static class UiDispatch
         if (dispatcher is null || dispatcher.HasShutdownStarted || dispatcher.CheckAccess()) action();
         else dispatcher.Invoke(action);
     }
+
+    /// <summary>
+    /// The same, keyed on the context a model captured when it was built rather than on the global
+    /// application. A model built on the UI thread posts back to it; one built without a context (a
+    /// unit test) runs inline, even when another test in the same process has a WPF window open.
+    /// </summary>
+    internal static void Run(SynchronizationContext? context, Action action)
+    {
+        if (context is null || ReferenceEquals(context, SynchronizationContext.Current)) action();
+        else context.Send(_ => action(), null);
+    }
 }

@@ -1,7 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using Tweaker.App.ViewModels;
-using Tweaker.Domain.Games;
 
 namespace Tweaker.App.Views;
 
@@ -11,11 +9,10 @@ public partial class GamesView : UserControl
     {
         InitializeComponent();
     }
+}
 
-    private void Profile_OnChecked(object sender, RoutedEventArgs e)
-    {
-        if (sender is RadioButton { Tag: string name } && DataContext is ShellViewModel shell &&
-            Enum.TryParse<GamePerformanceProfile>(name, out var profile))
-            shell.GameProfiles.SelectedProfile = profile;
-    }
+/// <summary>The stock converter, exposed as one shared instance so XAML can reference it with x:Static.</summary>
+public static class BooleanToVisibilityConverterInstance
+{
+    public static BooleanToVisibilityConverter Instance { get; } = new();
 }

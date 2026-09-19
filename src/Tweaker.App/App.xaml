@@ -11,6 +11,7 @@
         <ResourceDictionary Source="Resources/Theme.Home.xaml"/>
         <ResourceDictionary Source="Resources/Theme.Home.Components.xaml"/>
         <ResourceDictionary Source="Resources/Theme.Progress.xaml"/>
+        <ResourceDictionary Source="Resources/Theme.Shell.xaml"/>
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

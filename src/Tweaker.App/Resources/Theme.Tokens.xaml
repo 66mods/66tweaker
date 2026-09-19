@@ -1,17 +1,42 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <SolidColorBrush x:Key="WindowBrush" Color="#0E0F13"/>
+  <SolidColorBrush x:Key="WindowBrush" Color="#0A0912"/>
   <SolidColorBrush x:Key="TransparentBrush" Color="Transparent"/>
-  <SolidColorBrush x:Key="SidebarBrush" Color="#101116"/>
+
+  <!--
+    Glass. The window's light comes from the aurora behind everything, so a panel is a tint over it rather
+    than a solid: dark enough for text, thin enough that the light still moves underneath.
+  -->
+  <SolidColorBrush x:Key="GlassBrush" Color="#940E0C16"/>
+  <SolidColorBrush x:Key="GlassBorderBrush" Color="#1AFFFFFF"/>
+  <SolidColorBrush x:Key="GlassEdgeBrush" Color="#12FFFFFF"/>
+  <SolidColorBrush x:Key="Tint4Brush" Color="#0AFFFFFF"/>
+  <SolidColorBrush x:Key="Tint6Brush" Color="#0FFFFFFF"/>
+  <SolidColorBrush x:Key="Tint8Brush" Color="#14FFFFFF"/>
+  <SolidColorBrush x:Key="Tint10Brush" Color="#1AFFFFFF"/>
+  <SolidColorBrush x:Key="Tint12Brush" Color="#1FFFFFFF"/>
+  <SolidColorBrush x:Key="Tint16Brush" Color="#29FFFFFF"/>
+  <SolidColorBrush x:Key="Ink60Brush" Color="#99FFFFFF"/>
+  <SolidColorBrush x:Key="Ink45Brush" Color="#73FFFFFF"/>
+  <SolidColorBrush x:Key="Ink35Brush" Color="#59FFFFFF"/>
+  <SolidColorBrush x:Key="SelectedCardBrush" Color="#1F8B5CF6"/>
+  <SolidColorBrush x:Key="SelectedCardBorderBrush" Color="#669D74FA"/>
+  <SolidColorBrush x:Key="OkSoftBrush" Color="#244DD46A"/>
+  <SolidColorBrush x:Key="BadSoftBrush" Color="#24EF6262"/>
+  <SolidColorBrush x:Key="RunningSoftBrush" Color="#2E8B5CF6"/>
+  <SolidColorBrush x:Key="RunningInkBrush" Color="#C9B3FF"/>
+  <SolidColorBrush x:Key="GoldSoftBrush" Color="#24E6B94A"/>
+  <SolidColorBrush x:Key="GoldGlowBrush" Color="#E6B94A"/>
+  <DropShadowEffect x:Key="CtaGlow" Color="#C026D3" BlurRadius="40" ShadowDepth="10" Direction="270" Opacity="0.45"/>
+  <DropShadowEffect x:Key="ScoreGlow" Color="#8B5CF6" BlurRadius="60" ShadowDepth="0" Opacity="0.35"/>
   <!--
     Surfaces carry a slight top-to-bottom lift rather than being flat fills: in a dark theme a perfectly
     even panel reads as a hole, and the gradient is what makes a card look like it sits above the page.
     Raised surfaces are also a touch warmer than the base, which is what separates them at a glance.
   -->
   <LinearGradientBrush x:Key="SurfaceBrush" StartPoint="0,0" EndPoint="0,1">
-    <GradientStop Color="#181A22" Offset="0"/><GradientStop Color="#14161D" Offset="1"/>
+    <GradientStop Color="#12FFFFFF" Offset="0"/><GradientStop Color="#0AFFFFFF" Offset="1"/>
   </LinearGradientBrush>
-  <SolidColorBrush x:Key="HeroSurfaceBrush" Color="#171922"/>
   <LinearGradientBrush x:Key="RaisedSurfaceBrush" StartPoint="0,0" EndPoint="0,1">
     <GradientStop Color="#1E212B" Offset="0"/><GradientStop Color="#191C24" Offset="1"/>
   </LinearGradientBrush>
@@ -61,25 +86,32 @@
   <SolidColorBrush x:Key="GameGtaBrush" Color="#75B843"/>
   <SolidColorBrush x:Key="GameMinecraftBrush" Color="#7FB238"/>
   <SolidColorBrush x:Key="GameFortniteBrush" Color="#4FA3E3"/>
+  <!-- The big initial on a game card: the brand colour at a third strength. -->
+  <SolidColorBrush x:Key="GameRobloxGlyphBrush" Color="#57E2231A"/>
+  <SolidColorBrush x:Key="GameValorantGlyphBrush" Color="#66FF4655"/>
+  <SolidColorBrush x:Key="GameGtaGlyphBrush" Color="#6675B843"/>
+  <SolidColorBrush x:Key="GameMinecraftGlyphBrush" Color="#527FB238"/>
+  <SolidColorBrush x:Key="GameFortniteGlyphBrush" Color="#5C4FA3E3"/>
+  <SolidColorBrush x:Key="GlyphMutedBrush" Color="#1FFFFFFF"/>
 
   <!--
     Card backdrops. A wash of the brand colour over the surface, not the brand colour itself: the tile has
     to read as part of this app rather than as a pasted logo, and white text must stay legible on it.
   -->
   <LinearGradientBrush x:Key="GameRobloxWashBrush" StartPoint="0,0" EndPoint="0.7,1">
-    <GradientStop Color="#3A1614" Offset="0"/><GradientStop Color="#191C24" Offset="1"/>
+    <GradientStop Color="#3DE2231A" Offset="0"/><GradientStop Color="#05FFFFFF" Offset="0.65"/>
   </LinearGradientBrush>
   <LinearGradientBrush x:Key="GameValorantWashBrush" StartPoint="0,0" EndPoint="0.7,1">
-    <GradientStop Color="#3B1A20" Offset="0"/><GradientStop Color="#191C24" Offset="1"/>
+    <GradientStop Color="#4DFF4655" Offset="0"/><GradientStop Color="#05FFFFFF" Offset="0.65"/>
   </LinearGradientBrush>
   <LinearGradientBrush x:Key="GameGtaWashBrush" StartPoint="0,0" EndPoint="0.7,1">
-    <GradientStop Color="#22331A" Offset="0"/><GradientStop Color="#191C24" Offset="1"/>
+    <GradientStop Color="#4775B843" Offset="0"/><GradientStop Color="#05FFFFFF" Offset="0.65"/>
   </LinearGradientBrush>
   <LinearGradientBrush x:Key="GameMinecraftWashBrush" StartPoint="0,0" EndPoint="0.7,1">
-    <GradientStop Color="#243418" Offset="0"/><GradientStop Color="#191C24" Offset="1"/>
+    <GradientStop Color="#387FB238" Offset="0"/><GradientStop Color="#05FFFFFF" Offset="0.65"/>
   </LinearGradientBrush>
   <LinearGradientBrush x:Key="GameFortniteWashBrush" StartPoint="0,0" EndPoint="0.7,1">
-    <GradientStop Color="#152A3C" Offset="0"/><GradientStop Color="#191C24" Offset="1"/>
+    <GradientStop Color="#474FA3E3" Offset="0"/><GradientStop Color="#05FFFFFF" Offset="0.65"/>
   </LinearGradientBrush>
   <LinearGradientBrush x:Key="HeroGradientBrush" StartPoint="0,0" EndPoint="1,1">
     <GradientStop Color="#1A1D26" Offset="0"/>
@@ -87,7 +119,6 @@
     <GradientStop Color="#191724" Offset="1"/>
   </LinearGradientBrush>
 
-  <DropShadowEffect x:Key="SoftCardShadow" Color="#000000" BlurRadius="18" ShadowDepth="2" Opacity="0.20"/>
   <DropShadowEffect x:Key="SoftLogoShadow" Color="#8B5CF6" BlurRadius="18" ShadowDepth="0" Opacity="0.18"/>
 
   <StaticResource x:Key="BackgroundBrush" ResourceKey="WindowBrush"/>
@@ -149,10 +180,10 @@
   </Style>
 
   <Style x:Key="CardStyle" TargetType="Border">
-    <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+    <Setter Property="Background" Value="{StaticResource GlassBrush}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="12"/>
+    <Setter Property="CornerRadius" Value="20"/>
     <Setter Property="Padding" Value="20"/>
     <Style.Triggers>
       <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter Property="BorderBrush" Value="{StaticResource FocusBrush}"/></Trigger>

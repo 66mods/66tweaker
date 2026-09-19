@@ -22,6 +22,15 @@ public static class GameProfilePolicy
     };
 
     public static bool IsProtectedResolutionKey(string key) => ProtectedKeys.Contains(key);
+
+    /// <summary>The profile's name as the app shows it, one spelling for every vendor and page.</summary>
+    public static string DisplayName(GamePerformanceProfile profile) => profile switch
+    {
+        GamePerformanceProfile.BalancedFps => "Balanced FPS",
+        GamePerformanceProfile.Competitive => "Competitive",
+        GamePerformanceProfile.MegaFps => "Mega FPS",
+        _ => "Ultra Potato"
+    };
 }
 
 public static class GameProfileCatalog

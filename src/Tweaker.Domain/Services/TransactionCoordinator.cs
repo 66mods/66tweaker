@@ -100,7 +100,7 @@ public sealed class TransactionCoordinator(ITransactionStore store)
                     {
                         await request.Operation.RestoreAsync(original, CancellationToken.None);
                         var restoredValue = await request.Operation.ReadCurrentValueAsync(CancellationToken.None);
-                        if (!string.Equals(restoredValue, original, StringComparison.Ordinal))
+                        if (!RestoredMatches(request.Operation, original, restoredValue))
                             throw new InvalidOperationException("rollback verification failed");
                         transaction = ReplaceLast(transaction, TweakStatus.Restored, true,
                             $"Apply failed and the snapshot was restored: {error.Message}");
@@ -159,7 +159,7 @@ public sealed class TransactionCoordinator(ITransactionStore store)
             {
                 await operation.RestoreAsync(results[index].OriginalValue, cancellationToken);
                 var restoredValue = await operation.ReadCurrentValueAsync(cancellationToken);
-                if (!string.Equals(restoredValue, results[index].OriginalValue, StringComparison.Ordinal))
+                if (!RestoredMatches(operation, results[index].OriginalValue, restoredValue))
                     throw new InvalidOperationException("Restore verification failed");
                 results[index] = results[index] with { Status = TweakStatus.Restored, Verified = true, Message = "Restored and verified" };
             }
@@ -189,4 +189,10 @@ public sealed class TransactionCoordinator(ITransactionStore store)
         results[^1] = results[^1] with { Status = status, Verified = verified, Message = message };
         return record with { Results = results };
     }
+
+    /// <summary>An operation that knows its own snapshot format compares; every other one must read back the exact bytes.</summary>
+    private static bool RestoredMatches(ITweakOperation operation, string? original, string? restored) =>
+        operation is IRestoreVerifyingOperation verifying
+            ? verifying.RestoredMatches(original, restored)
+            : string.Equals(restored, original, StringComparison.Ordinal);
 }

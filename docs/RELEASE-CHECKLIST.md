@@ -7,7 +7,8 @@
 - [x] Every executable optimization has snapshot, verification, and rollback.
 - [x] Repair Center accepts only fixed action identifiers and structured arguments.
 - [x] No security mitigation, anti-cheat, driver clock, voltage, or firmware changes.
-- [x] No network request, updater, telemetry, or download code.
+- [x] No network request, updater, telemetry, or download code. Ask 66 answers from written text filled in
+      with this PC's facts; no HTTP client exists in the App project.
 - [x] In-process WPF runtime and screenshot acceptance passes at 1120x720 and 100% (96 DPI) across all eight pages.
 - [x] Layout verified at the smallest device-independent window sizes that 100%, 125% and 150% scaling produce on common screens.
 - [x] Manual UI review on physical Windows 10 and Windows 11 systems at 100%, 125%, and 150% scaling.
@@ -19,6 +20,49 @@
       the warning stays and the published SHA-256 is what users check instead.
 
 Verified local artifact: `artifacts\66mods-tweaker-1.1.0\66mods Tweaker.exe` v1.1.0, 78,752,053 bytes, SHA-256 `B65767AD6E87178E8453D410AB7CB427A40BAE509D11DC340A6EF679211C229B`, built 21 Aug 2026. The published folder contains the single executable only. The exact published process opened `MainWindowTitle = 66mods Tweaker` and remained responsive during the non-mutating smoke test. Automated acceptance covers real WPF layout at three window sizes across all eight pages, clipping and collision checks, navigation, focus, motion policy and window controls, with captured evidence under `docs/acceptance/frontend-redesign`.
+
+## 2.0
+
+Two things changed: what the app writes for AMD and Intel, and what it looks like.
+
+Verified local artifact: `artifacts\66mods-tweaker-2.0.0\66mods Tweaker.exe` v2.0.0, 87,319,739 bytes, SHA-256
+`89F27E0ED2456A37B639CE3E76BC49F7CD2C20FB46847F448B1C26330CCB331A`, built 16 Sep 2026. The published folder
+contains the single executable only. The exact published process opened `MainWindowTitle = 66mods Tweaker`,
+stayed responsive, and idled on Home at about 16% of one core (Windows 10, layered window) with the emblem
+video playing through Media Foundation.
+
+**Driver layer for every vendor.** `IGpuDriverProfileProvider` abstracts the vendor; NVIDIA keeps NVAPI
+and gains all five games, AMD gets ADLX (whole GPU, stated on the page), Intel gets the Graphics Control
+Library (per game). Each vendor records a baseline before its first write and can reset to it after a
+restart of the app. Covered by tests against fake drivers and byte-checked struct layouts.
+
+**Not verified on hardware.** The development machine is a Ryzen 5800X with an RTX 3060 Ti. The AMD and
+Intel paths have not been executed against a real Radeon or Arc. Until Discord testers report back, the
+README says so and the Games page names the vendor it found. Do not describe the AMD and Intel paths as
+tested in release notes.
+
+**Visual refresh.** One window, no sidebar: three pills, a glass panel per page, the emblem clip as a
+looped H.264 video decoded through Media Foundation (no Windows Media Player needed; a palette frame pack
+takes over on N editions), an aurora shader behind everything (vector fallback where ps_3_0 is
+unavailable), and Reduce Motion turning all of it off. The acceptance suite covers all eight pages at three window sizes,
+plus the Ask 66 drawer.
+
+**Ask 66.** A chat-shaped FAQ: answers are written into the app and filled in from this PC's facts. The
+DeepSeek option was built and then removed on the owner's decision — a shipped key can be extracted from
+the executable, and a relay was more than the feature is worth — so the "no network calls" promise stands.
+
+**Review before release.** A full review of the 2.0 change set found and fixed, before anything was
+committed: Optimize ran one elevated worker per ticked group (six UAC prompts for one press; now one
+transaction); a run rewrote the user's ticks; 1.1 NVIDIA journals could be restored but never verified
+under the 2.0 schema (the operation now compares snapshots, not bytes); the AMD baseline was kept per game
+although ADLX writes the whole card (now one file per card); an NVIDIA reset could strip the executable
+from a profile the owner made (now only from the profile 66mods created); overlapping ADLX sessions could
+terminate each other's runtime (now one at a time); a driver setting that cannot be read back failed the
+whole apply and stayed written (now unverifiable, not wrong); a baseline that could not be saved failed
+silently (now refuses the write and says why); the rescan control had been lost in the shell rewrite (now
+"Rescan this PC" in the ··· menu); the Home undo button lost its label after a run; the Games page opened
+with an empty preview; four Ask 66 questions got the wrong answer; the card spotlight accumulated handlers
+on every page switch; stopping the emblem could block the window. Each has a test.
 
 ## 1.1
 

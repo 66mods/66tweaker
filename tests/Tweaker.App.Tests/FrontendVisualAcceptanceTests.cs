@@ -141,6 +141,15 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
                 shell.Home.HasLiveMetrics.Should().BeTrue("the dashboard must show measured values, not placeholders");
                 shell.Home.CpuLoadPercent.Should().BeInRange(0, 100);
                 CapturePage(window, shell, output, 0, "home.png");
+                // The assistant, open over Home, with one local answer already on screen.
+                shell.Ask.Ask("Do I need to restart?");
+                shell.Ask.Messages.Should().HaveCount(2, "an answer must arrive; nothing is sent anywhere");
+                shell.Ask.IsOpen = true;
+                Pump(window);
+                Descendants<Views.AskPanel>(window).Single().IsVisible.Should().BeTrue("the drawer has to be on screen once opened");
+                Capture(window, Path.Combine(output, "ask66.png"));
+                shell.Ask.IsOpen = false;
+                Pump(window);
                 CapturePage(window, shell, output, 1, "optimization.png");
                 CapturePage(window, shell, output, 2, "games.png");
                 CapturePage(window, shell, output, 4, "repair.png");
@@ -170,8 +179,8 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
         shell.SelectedPageIndex = 1;
         Pump(window);
         var progress = shell.Optimization.Progress;
-        progress.Begin("Approve the administrator prompt, then Full Legacy Tweaks is applied.");
-        progress.Append("Full Legacy Tweaks: applying 1493 effect(s).");
+        progress.Begin("Approve the administrator prompt, then Windows is applied.");
+        progress.Append("Windows: applying 1493 effect(s).");
         progress.Append("Creating a system restore point (this can take a few minutes)…");
         progress.Append("Restore point created.");
         for (var index = 1; index <= 1489; index++)
@@ -309,7 +318,7 @@ public sealed class FrontendVisualAcceptanceTests(WpfRuntime ui)
     {
         application.Resources.MergedDictionaries.Clear();
         var assemblyName = Uri.EscapeDataString(typeof(MainWindow).Assembly.GetName().Name!);
-        foreach (var file in new[] { "Theme.Tokens.xaml", "Theme.Icons.xaml", "Theme.Controls.xaml", "Theme.Support.xaml", "Theme.Home.xaml", "Theme.Home.Components.xaml", "Theme.Progress.xaml" })
+        foreach (var file in new[] { "Theme.Tokens.xaml", "Theme.Icons.xaml", "Theme.Controls.xaml", "Theme.Support.xaml", "Theme.Home.xaml", "Theme.Home.Components.xaml", "Theme.Progress.xaml", "Theme.Shell.xaml" })
             application.Resources.MergedDictionaries.Add((ResourceDictionary)Application.LoadComponent(
                 new Uri($"/{assemblyName};component/Resources/{file}", UriKind.Relative)));
         foreach (var dictionary in application.Resources.MergedDictionaries)

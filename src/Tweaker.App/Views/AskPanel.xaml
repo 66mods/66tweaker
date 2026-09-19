@@ -1,0 +1,84 @@
+<UserControl x:Class="Tweaker.App.Views.AskPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Tweaker.App.Views">
+  <!-- The Ask 66 drawer. DataContext is an AskViewModel. -->
+  <Border Style="{StaticResource GlassPanelStyle}" Padding="20,18,20,14">
+    <Border.Effect><DropShadowEffect BlurRadius="60" ShadowDepth="24" Direction="270" Opacity="0.55"/></Border.Effect>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+
+      <Grid Grid.Row="0">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <Border Width="34" Height="34" CornerRadius="12" Background="{StaticResource AccentGradientBrush}">
+          <TextBlock Text="66" FontFamily="Segoe UI Variable Display" FontWeight="ExtraBold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+        </Border>
+        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+          <TextBlock Text="Ask 66" FontFamily="Segoe UI Variable Display" FontSize="17" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding ModeLabel}" FontSize="12" Foreground="{StaticResource Ink45Brush}" TextTrimming="CharacterEllipsis"/>
+        </StackPanel>
+        <Button Grid.Column="2" Style="{StaticResource GlyphButtonStyle}" Command="{Binding CloseCommand}" ToolTip="Close" Width="32" Height="32">
+          <Path Data="{StaticResource Icon.Close}" Width="11" Height="11" Stretch="Uniform" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+        </Button>
+      </Grid>
+
+      <ScrollViewer x:Name="MessageScroll" Grid.Row="1" Margin="0,16,0,0" VerticalScrollBarVisibility="Auto" Style="{StaticResource DarkScrollViewerStyle}">
+        <StackPanel Margin="0,0,4,0">
+          <TextBlock Text="Ask about the score, a group, a game profile, restarts, undo, the administrator prompt or the antivirus warning. Answers are filled in from what this app has read on this PC."
+                     Margin="2,2,2,10">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock" BasedOn="{StaticResource BodyMutedStyle}">
+                <Setter Property="Foreground" Value="{StaticResource Ink45Brush}"/>
+                <Style.Triggers><DataTrigger Binding="{Binding HasMessages}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+          <ItemsControl ItemsSource="{Binding Messages}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Style="{StaticResource AskBubbleStyle}" Tag="{Binding Role}">
+                  <TextBlock Text="{Binding Text}" FontSize="13.5" TextWrapping="Wrap" Foreground="#E6FFFFFF"/>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+
+      <ItemsControl Grid.Row="2" ItemsSource="{Binding Suggestions}" Margin="0,10,0,0">
+        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Button Style="{StaticResource SuggestionChipStyle}" Content="{Binding}" Click="Suggestion_OnClick"/>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <Border Grid.Row="3" Height="46" CornerRadius="14" Background="{StaticResource Tint6Brush}" BorderBrush="{StaticResource Tint10Brush}" BorderThickness="1" Margin="0,6,0,0" Padding="4">
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <TextBox x:Name="Input" Style="{StaticResource AskInputStyle}" Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}"
+                   KeyDown="Input_OnKeyDown" MaxLength="600" ToolTip="Ask anything about this PC" AutomationProperties.Name="Question"/>
+          <TextBlock Text="Ask anything about this PC…" Margin="14,0,0,0" VerticalAlignment="Center" FontSize="13.5" Foreground="{StaticResource Ink35Brush}" IsHitTestVisible="False">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Visibility" Value="Collapsed"/>
+                <Style.Triggers><DataTrigger Binding="{Binding Text.Length, ElementName=Input}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+          <Button Grid.Column="1" Width="38" Height="36" Style="{StaticResource PrimaryButtonStyle}" MinHeight="0" Padding="0"
+                  Command="{Binding SendCommand}" IsEnabled="{Binding CanSend}" ToolTip="Send">
+            <TextBlock Text="↑" FontSize="16" FontWeight="Bold" Margin="0,-2,0,0"/>
+          </Button>
+        </Grid>
+      </Border>
+
+      <TextBlock Grid.Row="4" Text="{Binding FooterText}" FontSize="11.5" Foreground="{StaticResource Ink35Brush}"
+                 TextWrapping="Wrap" TextAlignment="Center" Margin="0,10,0,0"/>
+    </Grid>
+  </Border>
+</UserControl>

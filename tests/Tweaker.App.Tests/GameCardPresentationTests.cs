@@ -50,7 +50,9 @@ public sealed class GameCardPresentationTests
 
         card.BackdropKey.Should().Be("GameValorantWashBrush");
         card.AccentKey.Should().Be("GameValorantBrush");
-        card.StatusText.Should().Be("Detected");
+        card.StatusText.Should().Be("detected");
+        card.Glyph.Should().Be("V");
+        card.GlyphBrushKey.Should().Be("GameValorantGlyphBrush");
         card.ProfileCountText.Should().Be("2 profiles");
     }
 
@@ -61,7 +63,8 @@ public sealed class GameCardPresentationTests
 
         card.BackdropKey.Should().Be("SurfaceBrush");
         card.AccentKey.Should().Be("DisabledBrush");
-        card.StatusText.Should().Be("Not installed");
+        card.StatusText.Should().Be("not installed");
+        card.GlyphBrushKey.Should().Be("GlyphMutedBrush");
         card.ProfileCountText.Should().Be("1 profile");
     }
 

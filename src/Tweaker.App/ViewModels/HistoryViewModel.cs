@@ -18,6 +18,8 @@ public sealed record LastOptimizationSummary(
 
     public string AppliedLabel => Applied == 1 ? "1 change applied" : $"{Applied} changes applied";
     public string FailedLabel => Failed == 1 ? "1 failed" : $"{Failed} failed";
+    /// <summary>The Home undo button's text: the time of the last run once there is one.</summary>
+    public string UndoLabel => HasSession ? $"Undo last run · {Timestamp}" : "Undo last run";
 }
 
 public sealed class HistoryViewModel(ITransactionHistoryStore store) : ObservableObject

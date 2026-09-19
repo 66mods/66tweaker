@@ -17,11 +17,27 @@ public sealed class ThemeControlTemplateTests
     [InlineData("CloseWindowButtonStyle")]
     [InlineData("DarkComboBoxStyle")]
     [InlineData("DarkCheckBoxStyle")]
-    [InlineData("SidebarListBoxItemStyle")]
-    [InlineData("NavTab")]
     public void RequiredKeyedInteractiveStyles_InheritTwoPixelFocusAndReadableDisabledState(string key)
     {
         var style = EffectiveStyle(key);
+
+        AssertTwoPixelFocus(style, key);
+        AssertDisabledOpacity(style, key);
+    }
+
+    /// <summary>The 2.0 shell kit: the pills, the main button, the switches and the links people actually press.</summary>
+    [Theory]
+    [InlineData("NavPillStyle")]
+    [InlineData("GlyphButtonStyle")]
+    [InlineData("ShellMenuItemStyle")]
+    [InlineData("CtaButtonStyle")]
+    [InlineData("GhostPillStyle")]
+    [InlineData("LinkButtonStyle")]
+    [InlineData("SwitchStyle")]
+    [InlineData("SuggestionChipStyle")]
+    public void ShellKitStyles_ExposeTwoPixelFocusAndReadableDisabledState(string key)
+    {
+        var style = EffectiveStyle(ShellStyle(key), key, ShellStyle);
 
         AssertTwoPixelFocus(style, key);
         AssertDisabledOpacity(style, key);
@@ -36,7 +52,7 @@ public sealed class ThemeControlTemplateTests
     {
         var style = Styles().Single(x => (string?)x.Attribute("TargetType") == targetType && x.Attribute(X + "Key") is null);
 
-        var effective = EffectiveStyle(style, targetType);
+        var effective = EffectiveStyle(style, targetType, Style);
         AssertTwoPixelFocus(effective, targetType);
         AssertDisabledOpacity(effective, targetType);
     }
@@ -110,21 +126,25 @@ public sealed class ThemeControlTemplateTests
         return hover.Elements().Single(x => x.Name.LocalName == "Setter" && (string?)x.Attribute("Property") == "Background").Attribute("Value")!.Value;
     }
 
-    private static XElement EffectiveStyle(string key) => EffectiveStyle(Style(key), key);
+    private static XElement EffectiveStyle(string key) => EffectiveStyle(Style(key), key, Style);
 
-    private static XElement EffectiveStyle(XElement style, string styleName)
+    private static XElement EffectiveStyle(XElement style, string styleName, Func<string, XElement> lookup)
     {
         while (!style.Elements().Any(x => x.Name.LocalName == "Setter" && (string?)x.Attribute("Property") == "Template"))
         {
             var basedOn = (string?)style.Attribute("BasedOn") ?? throw new Xunit.Sdk.XunitException($"{styleName} has no template or base style.");
-            style = Style(basedOn.Replace("{StaticResource ", "").TrimEnd('}'));
+            style = lookup(basedOn.Replace("{StaticResource ", "").TrimEnd('}'));
         }
 
         return style;
     }
 
     private static XElement Style(string key) => Styles().Single(x => (string?)x.Attribute(X + "Key") == key);
-    private static IEnumerable<XElement> Styles() => Theme().Elements().Where(x => x.Name.LocalName == "Style");
-    private static XElement Template(XElement style) => style.Descendants().Single(x => x.Name.LocalName == "ControlTemplate");
-    private static XElement Theme() => XDocument.Load(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Tweaker.App", "Resources", "Theme.Controls.xaml")).Root!;
+    private static IEnumerable<XElement> Styles() => Theme("Theme.Controls.xaml").Elements().Where(x => x.Name.LocalName == "Style");
+    /// <summary>Shell kit styles may be based on a control style, so the lookup falls through to that file.</summary>
+    private static XElement ShellStyle(string key) =>
+        Theme("Theme.Shell.xaml").Elements().SingleOrDefault(x => x.Name.LocalName == "Style" && (string?)x.Attribute(X + "Key") == key)
+        ?? Style(key);
+    private static XElement Template(XElement style) => style.Descendants().First(x => x.Name.LocalName == "ControlTemplate");
+    private static XElement Theme(string file) => XDocument.Load(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Tweaker.App", "Resources", file)).Root!;
 }

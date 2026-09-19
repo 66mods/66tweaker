@@ -22,12 +22,6 @@ public partial class HomeView : UserControl
         liveTimer.Tick += (_, _) => Sample();
         Loaded += (_, _) =>
         {
-            GreetingText.Text = DateTime.Now.Hour switch
-            {
-                < 12 => "Good morning",
-                < 18 => "Good afternoon",
-                _ => "Good evening"
-            };
             Sample();
             liveTimer.Start();
         };
@@ -39,14 +33,9 @@ public partial class HomeView : UserControl
         if (DataContext is ShellViewModel shell) shell.Home.SampleLiveMetrics();
     }
 
-    private void ReviewRecommendations_OnClick(object sender, RoutedEventArgs e)
+    private void Configure_OnClick(object sender, RoutedEventArgs e)
     {
         if (DataContext is ShellViewModel shell) shell.SelectedPageIndex = 1;
-    }
-
-    private void Settings_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is ShellViewModel shell) shell.SelectedPageIndex = 7;
     }
 }
 
